@@ -1,0 +1,26 @@
+- تحسين الهيرو 
+- تحسين الناف نضع فيه اسم التطبيق  والنقاط المستحصلة
+- app bar: تحسين الالوان وطريقة العرض والانيميشن
+    list: [home, stories, games, videos, profile]
+- Details Part:
+    - search & filters & sorting
+    - content list 
+        - cards size
+        - animation
+        - pagination
+        - skeleton
+    - content details
+        - title
+        - content
+            - PDF viewer: story, game
+            - video player: video, game 
+        - details content
+        - skeleton
+- Profile Part:
+    - settings dark mode
+    - achievements
+    - pages list: [privacy policy, terms of service, about us]
+    - team development: [Osus plus]
+    - version: 1.0.0
+- algorithms:
+    - add point for achievements

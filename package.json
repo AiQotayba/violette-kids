@@ -1,0 +1,32 @@
+{
+  "name": "violette-kids",
+  "version": "0.0.1",
+  "private": true,
+  "pnpm": {
+    "overrides": {
+      "node-forge": ">=1.3.2",
+      "qs": ">=6.14.1",
+      "jose": ">=4.15.5",
+      "lodash": ">=4.17.23",
+      "js-yaml": ">=4.1.1"
+    }
+  },
+  "scripts": {
+    "nx": "nx",
+    "dev": "pnpm run dev:web",
+    "dev:web": "nx run web:dev",
+    "build:web": "nx run web:build",
+    "lint:web": "nx run web:lint",
+    "start:web": "nx run web:start",
+    "dev:api": "nx run api:dev",
+    "build:api": "nx run api:build",
+    "lint:api": "nx run api:lint",
+    "start:api": "nx run api:start",
+    "start:mobile": "nx run mobile:start",
+    "android:mobile": "nx run mobile:android",
+    "ios:mobile": "nx run mobile:ios"
+  },
+  "devDependencies": {
+    "nx": "22.4.2"
+  }
+}

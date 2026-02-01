@@ -1,0 +1,86 @@
+routes:
+  - name: home
+    path: /
+    partials:
+      - name: hero
+        path: components/home/hero.tsx
+      - name: stories
+        path: components/home/stories.tsx
+          row title - view all stories
+          row: stories list cards
+      - name: games
+        path: components/home/games.tsx
+        row title - view all games
+        row: games list cards
+      - name: videos
+        path: components/home/videos.tsx
+        row title - view all videos
+        row: videos list cards
+  - name: stories
+    path: /stories
+    partials:
+      - name: stories
+        path: components/stories/stories.tsx
+        details:
+          - title
+          - filters:
+            - age group
+            - category
+            - search
+          - content:
+            - stories list cards
+            - pagination
+      - name: story details
+        path: /stories/:id
+        partials:
+          - name: story details
+            path: components/stories/story-details.tsx
+            details:
+              - title
+              - conten
+  - name: games
+    path: /games
+    partials:
+      - name: games
+        path: components/games/games.tsx
+        details:
+          - title
+          - content:
+            - games list cards
+            - pagination
+      - name: game details
+        path: /games/:id
+        partials:
+          - name: game details
+            path: components/games/game-details.tsx
+            details:
+              - title
+              - content
+  - name: videos
+    path: /videos
+    partials:
+      - name: videos
+        path: components/videos/videos.tsx
+        details:
+          - title
+          - content:
+            - videos list cards
+            - pagination
+      - name: video details
+        path: /videos/:id
+        partials: 
+          - name: video details
+            path: components/videos/video-details.tsx
+            details:
+              - title
+              - content
+  - name: achievements
+    path: /achievements
+    partials:
+      - name: achievements
+        path: components/achievements/achievements.tsx
+        details: 
+          - hero 
+          - content:
+            - achievements list cards
+            - pagination

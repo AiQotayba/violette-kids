@@ -1,0 +1,29 @@
+{
+  "name": "mobile",
+  "projectType": "application",
+  "root": "apps/mobile",
+  "sourceRoot": "apps/mobile",
+  "targets": {
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx expo start",
+        "cwd": "apps/mobile"
+      }
+    },
+    "android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run android",
+        "cwd": "apps/mobile"
+      }
+    },
+    "ios": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx expo start --ios",
+        "cwd": "apps/mobile"
+      }
+    }
+  }
+}

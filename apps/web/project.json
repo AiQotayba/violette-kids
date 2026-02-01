@@ -1,0 +1,32 @@
+{
+  "name": "web",
+  "projectType": "application",
+  "root": "apps/web",
+  "sourceRoot": "apps/web",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd app && pnpm run build"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd app && pnpm run dev"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd app && pnpm run lint"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd app && pnpm run start"
+      }
+    }
+  }
+}
