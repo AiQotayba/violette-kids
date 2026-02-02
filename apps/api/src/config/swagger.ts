@@ -10,7 +10,7 @@ const options: swaggerJsdoc.OAS3Definition = {
   },
   servers: [
     { url: "http://192.168.1.3:4000/api", description: "Development" },
-    { url: "/api", description: "Relative (same host)" },
+    { url: "https://api-violette-kids.sy-calculator.com/api", description: "Production" },
   ],
   tags: [
     { name: "Public", description: "Endpoints عامة بدون توثيق", },
