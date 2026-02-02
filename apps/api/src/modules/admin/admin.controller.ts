@@ -45,7 +45,7 @@ export const adminController = {
   async login(req: Request, res: Response): Promise<void> {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     const result = await adminService.login(parsed.data.email, parsed.data.password);
@@ -59,7 +59,7 @@ export const adminController = {
   async listUsers(req: Request, res: Response): Promise<void> {
     const parsed = querySchema.safeParse(req.query);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     const { limit = 10, offset = 0, page, search } = parsed.data;
@@ -86,7 +86,7 @@ export const adminController = {
   async createUser(req: Request, res: Response): Promise<void> {
     const parsed = createUserSchema.safeParse(req.body);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {
@@ -107,7 +107,7 @@ export const adminController = {
     }
     const bodyParsed = updateUserSchema.safeParse(req.body);
     if (!bodyParsed.success) {
-      sendError(res, bodyParsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, bodyParsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {

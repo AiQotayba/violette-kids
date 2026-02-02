@@ -6,7 +6,7 @@ export function validateBody<T extends z.ZodType>(schema: T) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      const message = result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
+      const message = result.error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
       sendError(res, message, 400);
       return;
     }
@@ -19,7 +19,7 @@ export function validateQuery<T extends z.ZodType>(schema: T) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      const message = result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
+      const message = result.error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
       sendError(res, message, 400);
       return;
     }
@@ -32,7 +32,7 @@ export function validateParams<T extends z.ZodType>(schema: T) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.params);
     if (!result.success) {
-      const message = result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
+      const message = result.error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
       sendError(res, message, 400);
       return;
     }

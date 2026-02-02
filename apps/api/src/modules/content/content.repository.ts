@@ -1,5 +1,6 @@
 import { prisma } from "../../config/db.js";
-import type { ContentType, Prisma } from "@prisma/client";
+import type { ContentType } from "./content.types.js";
+import type { Prisma } from "@prisma/client";
 import { CONTENT_CATEGORIES_LIMIT, MAX_LIMIT } from "../../config/constants.js";
 
 const contentSelect = {

@@ -1,4 +1,7 @@
-import type { ContentType, ContentSourceType } from "@prisma/client";
+/** Content type enum (matches Prisma schema) */
+export type ContentType = "story" | "video" | "game";
+/** Content source type (matches Prisma schema) */
+export type ContentSourceType = "uploaded" | "youtube" | "external";
 
 /** Category summary (up to 3 per content in public list) */
 export interface ContentCategoryItem {

@@ -1,6 +1,7 @@
-import type { ContentType, ContentSourceType } from "@prisma/client";
+import type { ContentType, ContentSourceType, ContentPublicItem, ContentPublicDetail, ContentListQuery, PaginatedResult } from "./content.types.js";
 import { contentRepository } from "./content.repository.js";
-import type { ContentPublicItem, ContentPublicDetail, ContentListQuery, PaginatedResult } from "./content.types.js";
+
+type PublicRow = Awaited<ReturnType<typeof contentRepository.findManyPublic>>["data"][number];
 import { YOUTUBE_URL_PATTERN, PDF_EXTENSION, GAME_SOURCE_TYPES } from "../../config/constants.js";
 
 function mapCategories(
@@ -80,7 +81,7 @@ export const contentService = {
       search: search?.trim() || undefined,
     });
 
-    const data: ContentPublicItem[] = result.data.map((row) => ({
+    const data: ContentPublicItem[] = result.data.map((row: PublicRow) => ({
       id: row.id,
       title: row.title,
       description: row.description,
@@ -122,7 +123,7 @@ export const contentService = {
       orderIndex: row.orderIndex,
       categories: mapCategories(row.categories),
       ageGroups: mapAgeGroups(row.ageGroups),
-      pages: row.pages?.map((p) => ({ pageNumber: p.pageNumber, imageUrl: p.imageUrl, text: p.text })) ?? [],
+      pages: row.pages?.map((p: { pageNumber: number; imageUrl: string; text: string | null }) => ({ pageNumber: p.pageNumber, imageUrl: p.imageUrl, text: p.text })) ?? [],
     };
   },
 

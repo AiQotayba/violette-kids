@@ -9,7 +9,7 @@ const options: swaggerJsdoc.OAS3Definition = {
       "API لمكتبة أطفال رقمية آمنة: قصص، فيديوهات، ألعاب. واجهة عامة للقراءة فقط + لوحة إدارة (JWT). لا حسابات مستخدمين عامة، لا تتبع أو تحليلات.",
   },
   servers: [
-    { url: "http://localhost:4000/api", description: "Development" },
+    { url: "http://192.168.1.3:4000/api", description: "Development" },
     { url: "/api", description: "Relative (same host)" },
   ],
   tags: [

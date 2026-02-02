@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { contentService } from "./content.service.js";
 import { sendError, sendSuccess } from "../../utils/response.js";
 import { z } from "zod";
-import type { ContentType } from "@prisma/client";
+import type { ContentType } from "./content.types.js";
 
 const querySchema = z.object({
   age: z.string().optional(),
@@ -43,7 +43,7 @@ export const contentController = {
   async listPublic(req: Request, res: Response): Promise<void> {
     const parsed = querySchema.safeParse(req.query);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {
@@ -71,7 +71,7 @@ export const contentController = {
   async listAdmin(req: Request, res: Response): Promise<void> {
     const parsed = querySchema.safeParse(req.query);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {
@@ -99,7 +99,7 @@ export const contentController = {
   async create(req: Request, res: Response): Promise<void> {
     const parsed = createBodySchema.safeParse(req.body);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {
@@ -118,7 +118,7 @@ export const contentController = {
     }
     const bodyParsed = updateBodySchema.safeParse(req.body);
     if (!bodyParsed.success) {
-      sendError(res, bodyParsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, bodyParsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {

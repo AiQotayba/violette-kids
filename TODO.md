@@ -24,3 +24,5 @@
     - version: 1.0.0
 - algorithms:
     - add point for achievements
+
+    notepad C:\Users\USER\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt

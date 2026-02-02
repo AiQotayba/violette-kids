@@ -18,7 +18,7 @@ export const ageGroupsController = {
   async listPublic(req: Request, res: Response): Promise<void> {
     const parsed = querySchema.safeParse(req.query);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     const { limit = 10, offset = 0, page, search } = parsed.data;
@@ -31,7 +31,7 @@ export const ageGroupsController = {
   async listAdmin(req: Request, res: Response): Promise<void> {
     const parsed = querySchema.safeParse(req.query);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     const { limit = 10, offset = 0, page, search } = parsed.data;
@@ -58,7 +58,7 @@ export const ageGroupsController = {
   async create(req: Request, res: Response): Promise<void> {
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) {
-      sendError(res, parsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {
@@ -79,7 +79,7 @@ export const ageGroupsController = {
     }
     const bodyParsed = updateSchema.safeParse(req.body);
     if (!bodyParsed.success) {
-      sendError(res, bodyParsed.error.errors.map((e) => e.message).join("; "), 400);
+      sendError(res, bodyParsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
       return;
     }
     try {
