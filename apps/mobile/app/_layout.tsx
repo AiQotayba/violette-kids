@@ -7,6 +7,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import { SettingsProvider, useEffectiveColorScheme } from '@/lib/settings/context';
@@ -46,9 +47,11 @@ export default function RootLayout() {
   }
 
   return (
-    <SettingsProvider>
-      <RootLayoutNav />
-    </SettingsProvider>
+    <SafeAreaProvider>
+      <SettingsProvider>
+        <RootLayoutNav />
+      </SettingsProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -63,6 +66,11 @@ function RootLayoutNav() {
           <Stack.Screen name="story/[id]" options={{ title: 'قصة' }} />
           <Stack.Screen name="game/[id]" options={{ title: 'لعبة' }} />
           <Stack.Screen name="video/[id]" options={{ title: 'فيديو' }} />
+          <Stack.Screen name="settings" options={{ title: 'الإعدادات' }} />
+          <Stack.Screen name="achievements" options={{ title: 'الإنجازات' }} />
+          <Stack.Screen name="privacy" options={{ title: 'سياسة الخصوصية' }} />
+          <Stack.Screen name="terms" options={{ title: 'شروط الخدمة' }} />
+          <Stack.Screen name="about" options={{ title: 'من نحن' }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
       </View>

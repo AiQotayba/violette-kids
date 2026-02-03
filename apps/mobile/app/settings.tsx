@@ -107,7 +107,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>المظهر</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>المظهر (الوضع الداكن)</Text>
         <View style={styles.optionsRow}>
           <Pressable
             style={[

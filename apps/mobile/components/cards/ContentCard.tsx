@@ -14,12 +14,16 @@ import { lightTheme, darkTheme } from '@/lib/theme';
 import { kidSpring } from '@/lib/animations/springs';
 import { PLACEHOLDER_STORY_IMAGE } from '@/lib/constants/placeholders';
 
+export type CardSize = 'compact' | 'default' | 'large';
+
 interface ContentCardProps {
   item: Content;
   type: 'story' | 'game' | 'video';
   index?: number;
   /** عند true يُستخدم داخل شبكة (يشغل عرض الخلية) */
   grid?: boolean;
+  /** حجم البطاقة في الشبكة: compact (3 أعمدة)، default (2)، large (1) */
+  cardSize?: CardSize;
 }
 
 const TYPE_LABEL = {
@@ -28,12 +32,14 @@ const TYPE_LABEL = {
   game: 'لعبة',
 } as const;
 
-export function ContentCard({ item, type, index = 0, grid = false }: ContentCardProps) {
+export function ContentCard({ item, type, index = 0, grid = false, cardSize = 'default' }: ContentCardProps) {
   const router = useRouter();
   const isDark = useEffectiveColorScheme() === 'dark';
   const theme = isDark ? darkTheme : lightTheme;
 
   const scale = useSharedValue(1);
+  const isCompact = cardSize === 'compact';
+  const isLarge = cardSize === 'large';
 
   const href =
     type === 'story'
@@ -88,9 +94,9 @@ export function ContentCard({ item, type, index = 0, grid = false }: ContentCard
                   style={styles.storyGradient}
                 />
               </View>
-              <View style={[styles.typeBadge, { backgroundColor: `${typeColor}E6` }]}>
-                <FontAwesome name="book" size={12} color="#fff" />
-                <Text style={styles.typeBadgeText}>{TYPE_LABEL.story}</Text>
+              <View style={[styles.typeBadge, isCompact && styles.typeBadgeCompact, { backgroundColor: `${typeColor}E6` }]}>
+                <FontAwesome name="book" size={isCompact ? 10 : 12} color="#fff" />
+                <Text style={[styles.typeBadgeText, isCompact && styles.typeBadgeTextCompact]}>{TYPE_LABEL.story}</Text>
               </View>
               {pagesCount != null && pagesCount > 0 && (
                 <View style={styles.pagesBadge}>
@@ -135,25 +141,25 @@ export function ContentCard({ item, type, index = 0, grid = false }: ContentCard
               style={styles.thumb}
               resizeMode="cover"
             />
-            <View style={[styles.typeBadge, styles.typeBadgeTop, { backgroundColor: `${typeColor}E6` }]}>
+            <View style={[styles.typeBadge, styles.typeBadgeTop, isCompact && styles.typeBadgeCompact, { backgroundColor: `${typeColor}E6` }]}>
               <FontAwesome
                 name={isVideo ? 'video-camera' : 'gamepad'}
-                size={11}
+                size={isCompact ? 9 : 11}
                 color="#fff"
               />
-              <Text style={styles.typeBadgeText}>{TYPE_LABEL[type]}</Text>
+              <Text style={[styles.typeBadgeText, isCompact && styles.typeBadgeTextCompact]}>{TYPE_LABEL[type]}</Text>
             </View>
             <View style={styles.playOverlay}>
               <View
                 style={[
                   styles.playBtn,
-                  grid && styles.playBtnGrid,
+                  grid && (isCompact ? styles.playBtnGridCompact : isLarge ? styles.playBtnGridLarge : styles.playBtnGrid),
                   { backgroundColor: typeColor },
                 ]}
               >
                 <FontAwesome
                   name="play"
-                  size={grid ? 18 : 26}
+                  size={grid ? (isCompact ? 14 : isLarge ? 24 : 18) : 26}
                   color="#fff"
                   style={styles.playIcon}
                 />
@@ -332,5 +338,23 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: 10,
     paddingHorizontal: 4,
+  },
+  typeBadgeCompact: {
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  typeBadgeTextCompact: {
+    fontSize: 10,
+  },
+  playBtnGridCompact: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  playBtnGridLarge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
   },
 });

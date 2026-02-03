@@ -16,13 +16,14 @@ export function HomeHero() {
     return 'مساء الخير';
   };
 
-  const stars = 0;
+  const points = 0;
   const level = 1;
   const levelLabel = level === 1 ? 'مبتدئ' : level < 5 ? 'نشيط' : 'بطل';
 
-  const cardBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.9)';
-  const cardBorder = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
-  const statBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const cardBg = isDark ? 'rgba(255,255,255,0.07)' : '#FFFFFF';
+  const cardBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)';
+  const statBg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(59,130,246,0.08)';
+  const statBorder = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(59,130,246,0.12)';
 
   return (
     <Animated.View
@@ -38,17 +39,23 @@ export function HomeHero() {
         </Text>
 
         <View style={styles.statsRow}>
-          <View style={[styles.statPill, { backgroundColor: statBg }]}>
-            <FontAwesome name="star" size={16} color={theme.accent[500]} />
-            <Text style={[styles.statValue, { color: theme.foreground }]}>{stars}</Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>نجمة</Text>
+          <View style={[styles.statPill, { backgroundColor: statBg, borderColor: statBorder }]}>
+            <View style={[styles.statIconWrap, { backgroundColor: theme.accent[400] + '22' }]}>
+              <FontAwesome name="star" size={18} color={theme.accent[500]} />
+            </View>
+            <View style={styles.statTextWrap}>
+              <Text style={[styles.statValue, { color: theme.foreground }]}>{points}</Text>
+              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>نقاط</Text>
+            </View>
           </View>
-          <View style={[styles.statPill, { backgroundColor: statBg }]}>
+          <View style={[styles.statPill, { backgroundColor: statBg, borderColor: statBorder }]}>
             <View style={[styles.levelBadge, { backgroundColor: theme.primary[500] }]}>
               <Text style={styles.levelNum}>{level}</Text>
             </View>
-            {/* <Text style={[styles.statValue, { color: theme.foreground }]}>المستوى</Text> */}
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{levelLabel}</Text>
+            <View style={styles.statTextWrap}>
+              <Text style={[styles.statValue, { color: theme.foreground }]}>{levelLabel}</Text>
+              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>المستوى</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -59,37 +66,53 @@ export function HomeHero() {
 const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
   card: {
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   greeting: {
-    fontSize: 14,
-    marginBottom: 6,
+    fontSize: 15,
+    marginBottom: 4,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
-    lineHeight: 30,
-    marginBottom: 20,
+    lineHeight: 32,
+    marginBottom: 24,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 14,
   },
   statPill: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  statIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statTextWrap: {
+    flex: 1,
   },
   statValue: {
     fontSize: 18,
@@ -97,17 +120,17 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    marginTop: 1,
+    marginTop: 2,
   },
   levelBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   levelNum: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     color: '#fff',
   },

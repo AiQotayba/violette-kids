@@ -1,0 +1,41 @@
+---
+description: معايير TypeScript ومعالجة الأخطاء في المشروع
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# معايير TypeScript
+
+## الأنواع
+
+- تعريف أنواع الواجهات (API، محتوى، إعدادات) في `types/` أو داخل الـ module عند الحاجة.
+- تجنب `any`؛ استخدام `unknown` مع التحقق عند الحاجة.
+
+## معالجة الأخطاء
+
+```typescript
+// ❌ تجنب: ابتلاع الخطأ
+try {
+  await fetchData();
+} catch (e) {}
+
+// ✅ أفضل: تسجيل و/أو إعادة رمي أو عرض رسالة للمستخدم
+try {
+  await fetchData();
+} catch (e) {
+  const message = e instanceof Error ? e.message : 'حدث خطأ';
+  setError(message);
+}
+```
+
+- في واجهة المستخدم (mobile): عرض رسائل خطأ **بالعربية** للمستخدم.
+
+## الاستيراد
+
+- **apps/mobile / apps/web:** استخدام alias `@/` (مثل `@/lib/api`, `@/components/...`).
+- **apps/api:** استيراد ESM ينتهي بـ `.js` (مثل `from "./content.service.js"`).
+
+## الملفات
+
+- المكونات: امتداد `.tsx` عند وجود JSX.
+- الباقي: `.ts`.

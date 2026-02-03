@@ -15,6 +15,7 @@ import { ContentCard } from '@/components/cards/ContentCard';
 import { HomeHero } from '@/components/home/HomeHero';
 import { SectionHeader } from '@/components/home/SectionHeader';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
+import { useTabBarBottomPadding } from '@/lib/useTabBarBottomPadding';
 import { lightTheme, darkTheme } from '@/lib/theme';
 import type { Content } from '@/types/content';
 
@@ -22,6 +23,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const isDark = useEffectiveColorScheme() === 'dark';
   const theme = isDark ? darkTheme : lightTheme;
+  const tabBarBottomPadding = useTabBarBottomPadding();
   const [stories, setStories] = useState<Content[]>([]);
   const [games, setGames] = useState<Content[]>([]);
   const [videos, setVideos] = useState<Content[]>([]);
@@ -97,7 +99,7 @@ export default function HomeScreen() {
   return (
     <ScrollView
       style={[styles.scroll, { backgroundColor: theme.background }]}
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarBottomPadding }]}
       showsVerticalScrollIndicator={false}
     >
       <HomeHero />
@@ -235,7 +237,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 96,
+    paddingBottom: 24,
   },
   section: {
     paddingVertical: 24,

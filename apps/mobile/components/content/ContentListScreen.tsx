@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -14,19 +14,32 @@ import { getContentList } from '@/lib/api';
 import { getCategories } from '@/lib/api';
 import { getAgeGroups } from '@/lib/api';
 import { ContentCard } from '@/components/cards/ContentCard';
+import { ContentCardSkeleton } from '@/components/cards/ContentCardSkeleton';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
+import { useTabBarBottomPadding } from '@/lib/useTabBarBottomPadding';
 import { lightTheme, darkTheme } from '@/lib/theme';
 import type { Content } from '@/types/content';
 import type { Category } from '@/types/content';
 import type { AgeGroup } from '@/types/content';
+import type { CardSize } from '@/components/cards/ContentCard';
 
 type ContentType = 'story' | 'video' | 'game';
+type SortOption = 'default' | 'newest' | 'oldest' | 'title';
 
 const TYPE_ICON: Record<ContentType, React.ComponentProps<typeof FontAwesome>['name']> = {
   story: 'book',
   video: 'video-camera',
   game: 'gamepad',
 };
+
+const SORT_LABELS: Record<SortOption, string> = {
+  default: 'الترتيب',
+  newest: 'الأحدث',
+  oldest: 'الأقدم',
+  title: 'الاسم أ–ي',
+};
+
+const PAGE_SIZE = 20;
 
 interface ContentListScreenProps {
   type: ContentType;
@@ -36,17 +49,41 @@ interface ContentListScreenProps {
 const GAP = 12;
 const PADDING = 16;
 
+function sortContent(list: Content[], sort: SortOption): Content[] {
+  if (sort === 'default') return list;
+  const arr = [...list];
+  if (sort === 'newest') {
+    arr.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return arr;
+  }
+  if (sort === 'oldest') {
+    arr.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    return arr;
+  }
+  if (sort === 'title') {
+    arr.sort((a, b) => a.title.localeCompare(b.title, 'ar'));
+    return arr;
+  }
+  return arr;
+}
+
 export function ContentListScreen({ type, title }: ContentListScreenProps) {
   const isDark = useEffectiveColorScheme() === 'dark';
   const theme = isDark ? darkTheme : lightTheme;
+  const tabBarBottomPadding = useTabBarBottomPadding();
 
   const [list, setList] = useState<Content[]>([]);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [ageId, setAgeId] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [cardSize, setCardSize] = useState<CardSize>('default');
   const [categories, setCategories] = useState<Category[]>([]);
   const [ageGroups, setAgeGroups] = useState<AgeGroup[]>([]);
 
@@ -59,31 +96,63 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
       .catch(() => setAgeGroups([]));
   }, []);
 
-  const loadContent = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    getContentList({
-      type,
-      limit: 50,
-      category: categoryId != null ? String(categoryId) : undefined,
-      age: ageId != null ? String(ageId) : undefined,
-      search: search.trim() || undefined,
-    })
-      .then((r) => setList(r.data ?? []))
-      .catch((e) => setError(e instanceof Error ? e.message : 'خطأ'))
-      .finally(() => setLoading(false));
-  }, [type, categoryId, ageId, search]);
+  const loadContent = useCallback(
+    (append: boolean) => {
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError(null);
+      }
+      const requestOffset = append ? offset : 0;
+      getContentList({
+        type,
+        limit: PAGE_SIZE,
+        offset: requestOffset,
+        category: categoryId != null ? String(categoryId) : undefined,
+        age: ageId != null ? String(ageId) : undefined,
+        search: search.trim() || undefined,
+      })
+        .then((r) => {
+          const data = r.data ?? [];
+          const newTotal = r.total ?? 0;
+          setTotal(newTotal);
+          if (append) {
+            setList((prev) => prev.concat(data));
+          } else {
+            setList(data);
+          }
+          setOffset(requestOffset + data.length);
+        })
+        .catch((e) => setError(e instanceof Error ? e.message : 'خطأ'))
+        .finally(() => {
+          setLoading(false);
+          setLoadingMore(false);
+        });
+    },
+    [type, categoryId, ageId, search, offset]
+  );
 
   useEffect(() => {
     loadFilters();
   }, [loadFilters]);
 
   useEffect(() => {
-    loadContent();
-  }, [loadContent]);
+    setOffset(0);
+    loadContent(false);
+  }, [type, categoryId, ageId, search]); // loadContent intentionally omitted to avoid refetch on offset change
+
+  const handleLoadMore = useCallback(() => {
+    if (loadingMore || loading || list.length >= total) return;
+    loadContent(true);
+  }, [loadingMore, loading, list.length, total, loadContent]);
 
   const applySearch = () => setSearch(searchInput.trim());
 
+  const sortedList = useMemo(() => sortContent(list, sortBy), [list, sortBy]);
+
+  const numColumns = cardSize === 'compact' ? 3 : cardSize === 'large' ? 1 : 2;
+  const hasMore = list.length < total && !loading && !loadingMore;
 
   if (error && list.length === 0) {
     return (
@@ -91,7 +160,7 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
         <FontAwesome name="exclamation-circle" size={48} color={theme.error} />
         <Text style={[styles.errorText, { color: theme.foreground }]}>{error}</Text>
         <Pressable
-          onPress={loadContent}
+          onPress={() => loadContent(false)}
           style={[styles.retryBtn, { backgroundColor: theme.primary[500] }]}
         >
           <Text style={styles.retryText}>إعادة المحاولة</Text>
@@ -131,7 +200,10 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
           contentContainerStyle={styles.filterRow}
         >
           <Pressable
-            onPress={() => { setCategoryId(null); setAgeId(null); }}
+            onPress={() => {
+              setCategoryId(null);
+              setAgeId(null);
+            }}
             style={[
               styles.chip,
               {
@@ -196,27 +268,90 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
             );
           })}
         </ScrollView>
+
+        <View style={[styles.toolRow, { borderTopColor: theme.border }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortRow}>
+            {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
+              <Pressable
+                key={key}
+                onPress={() => setSortBy(key)}
+                style={[
+                  styles.sortChip,
+                  {
+                    backgroundColor: sortBy === key ? theme.primary[500] : theme.muted,
+                    borderColor: sortBy === key ? theme.primary[500] : theme.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.chipText, { color: sortBy === key ? '#fff' : theme.foreground }]}>
+                  {SORT_LABELS[key]}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+          <View style={styles.cardSizeRow}>
+            {([ 'default', 'large'] as const).map((size) => (
+              <Pressable
+                key={size}
+                onPress={() => setCardSize(size)}
+                style={[
+                  styles.cardSizeBtn,
+                  { backgroundColor: cardSize === size ? theme.primary[500] : theme.muted },
+                ]}
+              >
+                <FontAwesome
+                  name={ size === 'default' ? 'th-large' : 'square-o'}
+                  size={16}
+                  color={cardSize === size ? '#fff' : theme.foreground}
+                />
+              </Pressable>
+            ))}
+          </View>
+        </View>
       </View>
 
       {loading && list.length === 0 ? (
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={theme.primary[500]} />
-          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
-            جاري التحميل...
-          </Text>
+        <View style={[styles.gridContent, { paddingBottom: tabBarBottomPadding }]}>
+          {numColumns === 1
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <View key={i} style={styles.skeletonCell1}>
+                  <ContentCardSkeleton cardSize={cardSize} />
+                </View>
+              ))
+            : (() => {
+                const perRow = numColumns;
+                const total = perRow * 3;
+                const rows: number[][] = [];
+                for (let i = 0; i < total; i++) {
+                  const rowIndex = Math.floor(i / perRow);
+                  if (!rows[rowIndex]) rows[rowIndex] = [];
+                  rows[rowIndex].push(i);
+                }
+                return rows.map((rowItems, rowIndex) => (
+                  <View key={rowIndex} style={styles.gridRow}>
+                    {rowItems.map((i) => (
+                      <View key={i} style={styles.gridCell}>
+                        <ContentCardSkeleton cardSize={cardSize} />
+                      </View>
+                    ))}
+                  </View>
+                ));
+              })()}
         </View>
       ) : (
         <FlatList
-          data={list}
+          data={sortedList}
           keyExtractor={(item) => String(item.id)}
-          numColumns={2}
-          columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={styles.gridContent}
+          numColumns={numColumns}
+          columnWrapperStyle={numColumns > 1 ? styles.gridRow : undefined}
+          contentContainerStyle={[styles.gridContent, { paddingBottom: tabBarBottomPadding }]}
           renderItem={({ item, index }) => (
             <View style={styles.gridCell}>
-              <ContentCard item={item} type={type} index={index} grid />
+              <ContentCard item={item} type={type} index={index} grid cardSize={cardSize} />
             </View>
           )}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.4}
           ListEmptyComponent={
             <View style={styles.empty}>
               <FontAwesome
@@ -224,10 +359,16 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
                 size={48}
                 color={theme.textSecondary}
               />
-              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-                لا يوجد محتوى
-              </Text>
+              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>لا يوجد محتوى</Text>
             </View>
+          }
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={styles.footerLoader}>
+                <ActivityIndicator size="small" color={theme.primary[500]} />
+                <Text style={[styles.footerLoaderText, { color: theme.textSecondary }]}>جاري تحميل المزيد...</Text>
+              </View>
+            ) : null
           }
         />
       )}
@@ -316,18 +457,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  loadingWrap: {
-    flex: 1,
-    justifyContent: 'center',
+  toolRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
   },
-  loadingText: {
-    fontSize: 16,
+  sortRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  sortChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  cardSizeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  cardSizeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   gridContent: {
     padding: PADDING,
-    paddingBottom: 100,
+    paddingBottom: PADDING,
   },
   gridRow: {
     gap: GAP,
@@ -336,6 +500,9 @@ const styles = StyleSheet.create({
   gridCell: {
     flex: 1,
     minWidth: 0,
+  },
+  skeletonCell1: {
+    marginBottom: GAP,
   },
   empty: {
     flex: 1,
@@ -346,5 +513,15 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+  },
+  footerLoader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+  },
+  footerLoaderText: {
+    fontSize: 14,
   },
 });

@@ -1,0 +1,39 @@
+---
+description: قواعد تطبيق الموبايل - Expo، React Native، NativeWind، الثيم
+globs: apps/mobile/**/*
+alwaysApply: false
+---
+
+# تطبيق الموبايل (Expo)
+
+## التقنيات
+
+- **Expo SDK 54** مع **expo-router** (ملفات التوجيه في `app/`)
+- **React Native** مع **NativeWind (Tailwind)** للأنماط
+- **react-native-reanimated** للأنيميشن (مثل `FadeInDown`)
+- **TypeScript** مع alias `@/` يشير إلى جذر `apps/mobile`
+
+## الثيم والألوان
+
+- استخدام `useEffectiveColorScheme()` من `@/lib/settings/context` لمعرفة الوضع (dark/light).
+- الألوان من `@/lib/theme`: `lightTheme`, `darkTheme` (خلفية، نص، primary، إلخ).
+- ألوان شريط التبويبات من `@/constants/Colors` (مصدّر افتراضي) أو من الثيم.
+- عدم ترميز ألوان ثابتة للواجهة؛ الاعتماد على الثيم لضمان دعم الوضع الداكن.
+
+## الواجهة والعربية
+
+- نصوص الواجهة (عناوين، أزرار، رسائل خطأ، تحميل) **بالعربية**.
+- مثال: "نجهز لك المحتوى...", "لا يمكن تحميل المحتوى", "قصص", "ألعاب", "فيديوهات".
+
+## أنماط الكود
+
+- المكونات الوظيفية (functional components)؛ استخدام hooks.
+- الأنماط: `StyleSheet.create` أو كلاسات NativeWind حسب نمط الملف الحالي.
+- شريط التبويبات السفلي: استخدام `useTabBarBottomPadding()` من `@/lib/useTabBarBottomPadding` عند الحاجة لمساحة آمنة.
+- جلب البيانات من `@/lib/api` (مثل `getContentList`); التعامل مع الحالة (loading, error) وعرض رسائل عربية مناسبة.
+
+## المسارات (expo-router)
+
+- التبويبات في `app/(tabs)/` (index, two، إلخ).
+- الشاشات الأخرى في `app/` (about, settings, achievements, terms, privacy، إلخ).
+- الروابط عبر `useRouter()` من `expo-router` أو `<Link href="...">`.

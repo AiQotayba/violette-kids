@@ -1,0 +1,32 @@
+---
+description: نظرة عامة على مشروع Violette Kids - Nx monorepo والتطبيقات
+alwaysApply: true
+---
+
+# Violette Kids – نظرة عامة المشروع
+
+## البنية (Monorepo)
+
+- **أداة البناء:** Nx 22.x مع pnpm
+- **التطبيقات:**
+  - **apps/mobile** – تطبيق Expo (React Native)، expo-router، NativeWind (Tailwind)
+  - **apps/web** – Next.js، Tailwind، مكونات shadcn/ui
+  - **apps/api** – Node + Express، Prisma، TypeScript (ESM مع `.js` في الاستيراد)
+
+## أوامر التشغيل
+
+- `pnpm run dev` / `pnpm run dev:web` – تشغيل الويب
+- `pnpm run dev:api` – تشغيل الـ API
+- `pnpm run start:mobile` – تشغيل تطبيق الموبايل (Expo)
+- `pnpm run android:mobile` / `pnpm run ios:mobile` – أندرويد / آي أو إس
+
+## اتفاقيات عامة
+
+- **اللغة:** واجهة المستخدم بالعربية (نصوص، رسائل خطأ، عناوين). التعليقات والوثائق يمكن أن تكون عربية أو إنجليزية.
+- **المسارات:** استخدام alias `@/` في mobile و web للإشارة إلى الجذور المحلية (مثل `@/lib/...`, `@/components/...`).
+- **الـ API:** بنية modular لكل feature: `controller`, `repository`, `service`, `routes`؛ استيراد ESM ينتهي بـ `.js`.
+
+## عند إضافة ميزات
+
+- التأكد من توافق التغييرات مع الثيم الفاتح/الداكن في التطبيق (mobile: `lightTheme` / `darkTheme` من `@/lib/theme`).
+- عدم كسر الـ API الحالي؛ الـ API يخدم محتوى أطفال (قصص، ألعاب، فيديو) مع فئات وفئات عمرية.
