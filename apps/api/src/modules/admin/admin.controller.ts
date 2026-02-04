@@ -136,4 +136,13 @@ export const adminController = {
       else sendError(res, (e as Error).message, 500);
     }
   },
+
+  async getDashboard(req: Request, res: Response): Promise<void> {
+    try {
+      const stats = await adminService.getDashboardStats();
+      sendSuccess(res, stats);
+    } catch (e) {
+      sendError(res, (e as Error).message, 500);
+    }
+  },
 };

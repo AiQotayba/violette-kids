@@ -1,6 +1,19 @@
+import { prisma } from "../../config/db.js";
 import { adminRepository } from "./admin.repository.js";
 import { comparePassword, hashPassword } from "../../utils/hash.js";
 import { signToken } from "../../utils/jwt.js";
+
+const recentContentSelect = {
+  id: true,
+  title: true,
+  type: true,
+  ageMin: true,
+  ageMax: true,
+  sourceType: true,
+  isActive: true,
+  orderIndex: true,
+  createdAt: true,
+} as const;
 
 export const adminService = {
   async getMe(adminId: number) {
@@ -46,5 +59,41 @@ export const adminService = {
 
   async deleteUser(id: number) {
     return adminRepository.delete(id);
+  },
+
+  async getDashboardStats() {
+    const [
+      totalContent,
+      totalStories,
+      totalVideos,
+      totalGames,
+      totalCategories,
+      totalAgeGroups,
+      activeContent,
+      recentContent,
+    ] = await Promise.all([
+      prisma.content.count(),
+      prisma.content.count({ where: { type: "story" } }),
+      prisma.content.count({ where: { type: "video" } }),
+      prisma.content.count({ where: { type: "game" } }),
+      prisma.category.count(),
+      prisma.ageGroup.count(),
+      prisma.content.count({ where: { isActive: true } }),
+      prisma.content.findMany({
+        select: recentContentSelect,
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+    ]);
+    return {
+      totalContent,
+      totalStories,
+      totalVideos,
+      totalGames,
+      totalCategories,
+      totalAgeGroups,
+      activeContent,
+      recentContent,
+    };
   },
 };

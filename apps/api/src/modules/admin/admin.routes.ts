@@ -64,6 +64,36 @@ router.get("/me", authMiddleware, adminController.me);
 
 /**
  * @openapi
+ * /admin/dashboard:
+ *   get:
+ *     tags: [Admin]
+ *     summary: إحصائيات لوحة التحكم
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200:
+ *         description: إجماليات المحتوى، التصنيفات، الفئات العمرية، وآخر المحتوى
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalContent: { type: integer }
+ *                 totalStories: { type: integer }
+ *                 totalVideos: { type: integer }
+ *                 totalGames: { type: integer }
+ *                 totalCategories: { type: integer }
+ *                 totalAgeGroups: { type: integer }
+ *                 activeContent: { type: integer }
+ *                 recentContent: { type: array, items: { $ref: '#/components/schemas/Content' } }
+ *       401:
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+router.get("/dashboard", authMiddleware, adminController.getDashboard);
+
+/**
+ * @openapi
  * /admin/users:
  *   get:
  *     tags: [Admin_Users]

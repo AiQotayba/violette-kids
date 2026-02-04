@@ -41,3 +41,10 @@ cd && cd ~/violette-kids && git pull && cd apps/api/ && pnpm install && pnpm exe
 📱 profile part - achievements
 📱 profile part - pages list: [privacy policy, terms of service, about us] 
 📱 algorithms: add point for achievements
+
+# admin panel:
+- guidline colors for project
+<!-- - admin dashboard Home analytics -->
+<!-- - table pagination -->
+<!-- - upload image and PDF file -->
+<!-- - profile page -->

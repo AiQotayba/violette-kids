@@ -1,0 +1,131 @@
+// =======================
+// DATASOURCE & GENERATOR
+// =======================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// =======================
+// ENUMS
+// =======================
+
+enum ContentType {
+  story
+  video
+  game
+}
+
+enum ContentSourceType {
+  uploaded // PDF أو أي رفع داخلي
+  youtube // فيديو على يوتيوب
+  external // روابط خارجية (اختياري)
+}
+
+// =======================
+// CORE MODELS
+// =======================
+
+model Content {
+  id           Int               @id @default(autoincrement())
+  title        String
+  description  String?
+  type         ContentType
+  ageMin       Int
+  ageMax       Int
+  thumbnailUrl String?
+  contentUrl   String? // يستخدم للفيديو أو رابط خارجي
+  fileUrl      String? // جديد: ملفات PDF للألعاب
+  sourceType   ContentSourceType
+  isActive     Boolean           @default(true)
+  orderIndex   Int               @default(0)
+  createdAt    DateTime          @default(now())
+
+  pages      ContentPage[]
+  categories ContentCategory[]
+  ageGroups  ContentAgeGroup[]
+}
+
+model ContentPage {
+  id         Int     @id @default(autoincrement())
+  contentId  Int
+  pageNumber Int
+  imageUrl   String
+  text       String?
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, pageNumber])
+}
+
+// =======================
+// CATEGORIES
+// =======================
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  icon String?
+
+  contents ContentCategory[]
+}
+
+model ContentCategory {
+  contentId  Int
+  categoryId Int
+
+  content  Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, categoryId])
+}
+
+// =======================
+// AGE GROUPS
+// =======================
+
+model AgeGroup {
+  id     Int    @id @default(autoincrement())
+  label  String @unique // مثال: 3-5
+  ageMin Int
+  ageMax Int
+
+  contents ContentAgeGroup[]
+}
+
+model ContentAgeGroup {
+  contentId  Int
+  ageGroupId Int
+
+  content  Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  ageGroup AgeGroup @relation(fields: [ageGroupId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, ageGroupId])
+}
+
+// =======================
+// ADMINS (CONTROL PANEL)
+// =======================
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+// =======================
+// APP SETTINGS
+// =======================
+
+model AppSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
