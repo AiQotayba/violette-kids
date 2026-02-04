@@ -137,8 +137,9 @@ export const adminController = {
     }
   },
 
-  async getDashboard(req: Request, res: Response): Promise<void> {
+  async getDashboard(_req: Request, res: Response): Promise<void> {
     try {
+      
       const stats = await adminService.getDashboardStats();
       sendSuccess(res, stats);
     } catch (e) {
