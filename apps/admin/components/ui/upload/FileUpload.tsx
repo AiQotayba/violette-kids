@@ -58,7 +58,7 @@ export function FileUpload({
       if (response.isError) return
       const url = getUploadUrl(response.data)
       if (url) {
-        onChange(`${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${url}`)
+        onChange(`${process.env.NEXT_PUBLIC_API_URL?.replace("com/api", "com")}${url}`)
         toast.success("تم رفع الملف بنجاح")
       } else {
         toast.error("لم يُرجع الرابط بعد الرفع")

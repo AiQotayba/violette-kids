@@ -181,16 +181,16 @@ export default function LoginPage() {
               </Button>
 
               {/* Demo Login */}
-              <div className="relative">
+              {/* <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-card px-2 text-muted-foreground">أو</span>
                 </div>
-              </div>
+              </div> */}
 
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 className="w-full bg-transparent"
@@ -198,7 +198,7 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 دخول تجريبي (للمعاينة)
-              </Button>
+              </Button> */}
             </form>
           </CardContent>
         </Card>

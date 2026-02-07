@@ -1,15 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { Linking, ScrollView, StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import {
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Pressable,
+} from 'react-native';
 import { getContentById } from '@/lib/api';
 import type { Content } from '@/types/content';
-import { lightTheme } from '@/lib/theme';
+import { useEffectiveColorScheme } from '@/lib/settings/context';
+import { lightTheme, darkTheme } from '@/lib/theme';
+import { ContentDetailSkeleton } from '@/components/content/ContentDetailSkeleton';
+import { PdfViewer } from '@/components/content/PdfViewer';
 
 export default function GameDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isDark = useEffectiveColorScheme() === 'dark';
+  const theme = isDark ? darkTheme : lightTheme;
 
   useEffect(() => {
     const numId = id ? parseInt(id, 10) : NaN;
@@ -25,58 +38,109 @@ export default function GameDetailScreen() {
   }, [id]);
 
   if (loading) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.text}>جاري التحميل...</Text>
-      </View>
-    );
+    return <ContentDetailSkeleton variant="media" />;
   }
   if (error || !content) {
     return (
-      <View style={styles.centered}>
-        <Text style={[styles.text, { color: lightTheme.error }]}>{error ?? 'المحتوى غير موجود'}</Text>
+      <View style={[styles.centered, { backgroundColor: theme.background }]}>
+        <Text style={[styles.text, { color: theme.error }]}>
+          {error ?? 'المحتوى غير موجود'}
+        </Text>
       </View>
     );
   }
 
   const isYoutube = content.sourceType === 'youtube' && content.contentUrl;
   const isPdf = content.sourceType === 'uploaded' && content.fileUrl;
+  const ageGroups = content.ageGroups ?? [];
+  const ageLabel =
+    ageGroups[0]?.label ??
+    (content.ageMin != null && content.ageMax != null
+      ? `العمر: ${content.ageMin}-${content.ageMax} سنة`
+      : null);
+  const categories = content.categories ?? [];
 
-  const openLink = (url: string) => {
+  const openExternal = (url: string) => {
     Linking.openURL(url).catch(() => {});
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      contentContainerStyle={styles.content}
+    >
       {content.thumbnailUrl ? (
         <Image
           source={{ uri: content.thumbnailUrl }}
-          style={styles.thumbnail}
+          style={[styles.thumbnail, { backgroundColor: theme.muted }]}
           resizeMode="cover"
         />
       ) : null}
-      <Text style={styles.title}>{content.title}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{content.title}</Text>
+
+      {(ageLabel || categories.length > 0) && (
+        <View style={styles.detailsRow}>
+          {ageLabel ? (
+            <View style={[styles.chip, { backgroundColor: theme.muted }]}>
+              <Text style={[styles.chipText, { color: theme.textSecondary }]}>
+                {ageLabel}
+              </Text>
+            </View>
+          ) : null}
+          {categories.map((cat) => (
+            <View
+              key={cat.id}
+              style={[styles.chip, { backgroundColor: theme.muted }]}
+            >
+              <Text style={[styles.chipText, { color: theme.textSecondary }]}>
+                {cat.name}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       {content.description ? (
-        <Text style={styles.description}>{content.description}</Text>
+        <Text style={[styles.description, { color: theme.textSecondary }]}>
+          {content.description}
+        </Text>
       ) : null}
+
+      {isPdf && content.fileUrl ? (
+        <>
+          <PdfViewer uri={content.fileUrl} />
+          <Pressable
+            style={({ pressed }) => [
+              styles.linkButton,
+              { borderColor: theme.border },
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => openExternal(content.fileUrl!)}
+          >
+            <Text style={[styles.linkButtonText, { color: theme.tint }]}>
+              فتح الملف في المتصفح
+            </Text>
+          </Pressable>
+        </>
+      ) : null}
+
       {isYoutube ? (
         <Pressable
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={() => openLink(content.contentUrl!)}
+          style={({ pressed }) => [
+            styles.button,
+            { backgroundColor: theme.primary[400] },
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => openExternal(content.contentUrl!)}
         >
           <Text style={styles.buttonText}>شاهد الفيديو على يوتيوب</Text>
         </Pressable>
       ) : null}
-      {isPdf ? (
-        <Pressable
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={() => openLink(content.fileUrl!)}
-        >
-          <Text style={styles.buttonText}>افتح ملف PDF</Text>
-        </Pressable>
-      ) : null}
+
       {!isYoutube && !isPdf && (
-        <Text style={styles.empty}>لا يوجد رابط للعبة حالياً</Text>
+        <Text style={[styles.empty, { color: theme.textSecondary }]}>
+          لا يوجد رابط للعبة حالياً
+        </Text>
       )}
     </ScrollView>
   );
@@ -90,29 +154,47 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 16 / 9,
     borderRadius: 12,
-    backgroundColor: lightTheme.neutral[200],
     marginBottom: 16,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: lightTheme.text,
     marginBottom: 8,
   },
+  detailsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  chipText: { fontSize: 13, fontWeight: '500' },
   description: {
     fontSize: 15,
-    color: lightTheme.textSecondary,
     marginBottom: 20,
   },
   button: {
-    backgroundColor: lightTheme.primary[400],
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
     alignItems: 'center',
+    marginBottom: 24,
   },
+  linkButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  linkButtonText: { fontSize: 15, fontWeight: '500' },
   buttonPressed: { opacity: 0.9 },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  text: { fontSize: 16, color: lightTheme.text },
-  empty: { fontSize: 16, color: lightTheme.textSecondary, textAlign: 'center' },
+  text: { fontSize: 16 },
+  empty: { fontSize: 16, textAlign: 'center' },
 });

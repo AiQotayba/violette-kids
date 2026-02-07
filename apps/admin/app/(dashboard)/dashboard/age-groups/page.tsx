@@ -79,6 +79,7 @@ export default function AgeGroupsPage() {
         enableView={false}
         enableEdit={true}
         enableDelete={true}
+        enableReorder={true}
         actions={{
           onEdit: handleEdit,
         }}

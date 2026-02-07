@@ -132,6 +132,7 @@ export default function GamesPage() {
         enableView={true}
         enableEdit={true}
         enableDelete={true}
+        enableReorder={true}
         limitOptions={[10, 25, 50, 100]}
         actions={{
           onView: handleView,

@@ -28,23 +28,19 @@ cd && cd ~/violette-kids && git pull && cd apps/api/ && pnpm install && pnpm exe
 
 📱 appbar refactor
 📱 details part refactor filter & sorting & search
-📱 content list - cards size
 📱 content list - animation
-📱 content list - pagination
 📱 content list - skeleton
 📱 content details - title
 📱 content details - content PDF viewer: story, game
 📱 content details - content video player: video, game
 📱 content details - details content
-📱 content details - skeleton 
+📱 content details - skeleton
 📱 profile part - settings dark mode
 📱 profile part - achievements
-📱 profile part - pages list: [privacy policy, terms of service, about us] 
+📱 profile part - pages list: [privacy policy, terms of service, about us]
 📱 algorithms: add point for achievements
 
 # admin panel:
+
 - guidline colors for project
-<!-- - admin dashboard Home analytics -->
-<!-- - table pagination -->
-<!-- - upload image and PDF file -->
-<!-- - profile page -->
+- rename app

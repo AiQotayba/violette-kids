@@ -42,6 +42,12 @@ export interface Content {
   pages?: ContentPage[];
 }
 
+/** شكل الاستجابة من الـ API عند وجود علاقات (مثلاً Prisma include) */
+export interface ContentApiResponse extends Omit<Content, 'categories' | 'ageGroups'> {
+  categories?: Array<{ category: CategoryItem }>;
+  ageGroups?: Array<{ ageGroup: AgeGroupItem }>;
+}
+
 export interface PaginatedContent {
   data: Content[];
   total: number;

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'مكتبة أطفال رقمية - لوحة التحكم',
   description: 'لوحة تحكم لإدارة المحتوى التعليمي للأطفال - قصص، فيديوهات، ألعاب',
-  generator: 'v0.app',
+  applicationName: 'لوحة تحكم فيوليت كيدز',
 }
 
 export const viewport: Viewport = {

@@ -1,18 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   ScrollView,
   TextInput,
   Pressable,
   ActivityIndicator,
 } from 'react-native';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { getContentList } from '@/lib/api';
-import { getCategories } from '@/lib/api';
-import { getAgeGroups } from '@/lib/api';
+import { getContentList, getCategories, getAgeGroups } from '@/lib/api';
 import { ContentCard } from '@/components/cards/ContentCard';
 import { ContentCardSkeleton } from '@/components/cards/ContentCardSkeleton';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
@@ -39,7 +37,7 @@ const SORT_LABELS: Record<SortOption, string> = {
   title: 'الاسم أ–ي',
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 interface ContentListScreenProps {
   type: ContentType;
@@ -72,98 +70,88 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
   const theme = isDark ? darkTheme : lightTheme;
   const tabBarBottomPadding = useTabBarBottomPadding();
 
-  const [list, setList] = useState<Content[]>([]);
-  const [total, setTotal] = useState(0);
-  const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [ageId, setAgeId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('default');
   const [cardSize, setCardSize] = useState<CardSize>('default');
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [ageGroups, setAgeGroups] = useState<AgeGroup[]>([]);
 
-  const loadFilters = useCallback(() => {
-    getCategories({ limit: 50 })
-      .then((r) => setCategories(r.data ?? []))
-      .catch(() => setCategories([]));
-    getAgeGroups({ limit: 20 })
-      .then((r) => setAgeGroups(r.data ?? []))
-      .catch(() => setAgeGroups([]));
-  }, []);
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => getCategories({ limit: 50 }),
+  });
+  const categories = categoriesData?.data ?? [];
 
-  const loadContent = useCallback(
-    (append: boolean) => {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-        setError(null);
-      }
-      const requestOffset = append ? offset : 0;
-      getContentList({
+  const { data: ageGroupsData } = useQuery({
+    queryKey: ['ageGroups'],
+    queryFn: () => getAgeGroups({ limit: 20 }),
+  });
+  const ageGroups = ageGroupsData?.data ?? [];
+
+  const {
+    data: contentData,
+    isPending: loading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['content', type, categoryId, ageId, search],
+    queryFn: async ({ pageParam }) => {
+      const r = await getContentList({
         type,
         limit: PAGE_SIZE,
-        offset: requestOffset,
+        offset: pageParam * PAGE_SIZE,
         category: categoryId != null ? String(categoryId) : undefined,
         age: ageId != null ? String(ageId) : undefined,
         search: search.trim() || undefined,
-      })
-        .then((r) => {
-          const data = r.data ?? [];
-          const newTotal = r.total ?? 0;
-          setTotal(newTotal);
-          if (append) {
-            setList((prev) => prev.concat(data));
-          } else {
-            setList(data);
-          }
-          setOffset(requestOffset + data.length);
-        })
-        .catch((e) => setError(e instanceof Error ? e.message : 'خطأ'))
-        .finally(() => {
-          setLoading(false);
-          setLoadingMore(false);
-        });
+      });
+      return { data: r.data ?? [], total: r.total ?? 0 };
     },
-    [type, categoryId, ageId, search, offset]
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((acc, p) => acc + p.data.length, 0);
+      return loaded < lastPage.total ? allPages.length : undefined;
+    },
+  });
+
+  const list = useMemo(
+    () => contentData?.pages.flatMap((p) => p.data) ?? [],
+    [contentData]
   );
 
-  useEffect(() => {
-    loadFilters();
-  }, [loadFilters]);
-
-  useEffect(() => {
-    setOffset(0);
-    loadContent(false);
-  }, [type, categoryId, ageId, search]); // loadContent intentionally omitted to avoid refetch on offset change
-
   const handleLoadMore = useCallback(() => {
-    if (loadingMore || loading || list.length >= total) return;
-    loadContent(true);
-  }, [loadingMore, loading, list.length, total, loadContent]);
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const applySearch = () => setSearch(searchInput.trim());
 
   const sortedList = useMemo(() => sortContent(list, sortBy), [list, sortBy]);
 
   const numColumns = cardSize === 'compact' ? 3 : cardSize === 'large' ? 1 : 2;
-  const hasMore = list.length < total && !loading && !loadingMore;
+  const errorMessage = error instanceof Error ? error.message : error ? 'خطأ' : null;
 
-  if (error && list.length === 0) {
+  if (errorMessage && list.length === 0) {
     return (
-      <View style={[styles.centered, { backgroundColor: theme.background }]}>
+      <View
+        className="flex-1 justify-center items-center p-6"
+        style={{ backgroundColor: theme.background }}
+      >
         <FontAwesome name="exclamation-circle" size={48} color={theme.error} />
-        <Text style={[styles.errorText, { color: theme.foreground }]}>{error}</Text>
-        <Pressable
-          onPress={() => loadContent(false)}
-          style={[styles.retryBtn, { backgroundColor: theme.primary[500] }]}
+        <Text
+          className="text-base mt-4 text-center"
+          style={{ color: theme.foreground }}
         >
-          <Text style={styles.retryText}>إعادة المحاولة</Text>
+          {errorMessage}
+        </Text>
+        <Pressable
+          onPress={() => refetch()}
+          className="mt-5 px-6 py-3 rounded-[14px] active:opacity-90"
+          style={{ backgroundColor: theme.primary[500] }}
+        >
+          <Text className="text-white text-base font-bold">إعادة المحاولة</Text>
         </Pressable>
       </View>
     );
@@ -172,19 +160,36 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
   const typeColor = type === 'story' ? theme.stories : type === 'video' ? theme.videos : theme.games;
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <View style={styles.titleRow}>
-          <View style={[styles.titleIcon, { backgroundColor: `${typeColor}22` }]}>
+    <View className="flex-1" style={{ backgroundColor: theme.background }}>
+      <View
+        className="px-4 pt-3 pb-3 border-b"
+        style={{ borderBottomColor: theme.border }}
+      >
+        <View className="flex-row items-center gap-3 mb-3">
+          <View
+            className="w-11 h-11 rounded-[14px] items-center justify-center"
+            style={{ backgroundColor: `${typeColor}22` }}
+          >
             <FontAwesome name={TYPE_ICON[type]} size={24} color={typeColor} />
           </View>
-          <Text style={[styles.title, { color: theme.foreground }]}>{title}</Text>
+          <Text
+            className="text-[22px] font-bold flex-1"
+            style={{ color: theme.foreground }}
+          >
+            {title}
+          </Text>
         </View>
 
-        <View style={[styles.searchRow, { backgroundColor: theme.muted }]}>
-          <FontAwesome name="search" size={16} color={theme.textSecondary} style={styles.searchIcon} />
+        <View
+          className="flex-row items-center rounded-[14px] px-3.5 mb-2.5 h-11"
+          style={{ backgroundColor: theme.muted }}
+        >
+          <View className="ml-2">
+            <FontAwesome name="search" size={16} color={theme.textSecondary} />
+          </View>
           <TextInput
-            style={[styles.searchInput, { color: theme.foreground }]}
+            className="flex-1 text-base py-0"
+            style={{ color: theme.foreground }}
             placeholder="ابحث..."
             placeholderTextColor={theme.textSecondary}
             value={searchInput}
@@ -197,26 +202,22 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRow}
+          contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
         >
           <Pressable
             onPress={() => {
               setCategoryId(null);
               setAgeId(null);
             }}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: categoryId === null && ageId === null ? theme.primary[500] : theme.muted,
-                borderColor: categoryId === null && ageId === null ? theme.primary[500] : theme.border,
-              },
-            ]}
+            className="px-3.5 py-2 rounded-[20px] border active:opacity-90"
+            style={{
+              backgroundColor: categoryId === null && ageId === null ? theme.primary[500] : theme.muted,
+              borderColor: categoryId === null && ageId === null ? theme.primary[500] : theme.border,
+            }}
           >
             <Text
-              style={[
-                styles.chipText,
-                { color: categoryId === null && ageId === null ? '#fff' : theme.foreground },
-              ]}
+              className="text-sm font-semibold"
+              style={{ color: categoryId === null && ageId === null ? '#fff' : theme.foreground }}
             >
               الكل
             </Text>
@@ -227,16 +228,15 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
               <Pressable
                 key={`c-${c.id}`}
                 onPress={() => setCategoryId(selected ? null : c.id)}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: selected ? theme.primary[500] : theme.muted,
-                    borderColor: selected ? theme.primary[500] : theme.border,
-                  },
-                ]}
+                className="px-3.5 py-2 rounded-[20px] border active:opacity-90"
+                style={{
+                  backgroundColor: selected ? theme.primary[500] : theme.muted,
+                  borderColor: selected ? theme.primary[500] : theme.border,
+                }}
               >
                 <Text
-                  style={[styles.chipText, { color: selected ? '#fff' : theme.foreground }]}
+                  className="text-sm font-semibold"
+                  style={{ color: selected ? '#fff' : theme.foreground }}
                   numberOfLines={1}
                 >
                   {c.name}
@@ -250,16 +250,15 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
               <Pressable
                 key={`a-${a.id}`}
                 onPress={() => setAgeId(selected ? null : a.id)}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: selected ? theme.primary[500] : theme.muted,
-                    borderColor: selected ? theme.primary[500] : theme.border,
-                  },
-                ]}
+                className="px-3.5 py-2 rounded-[20px] border active:opacity-90"
+                style={{
+                  backgroundColor: selected ? theme.primary[500] : theme.muted,
+                  borderColor: selected ? theme.primary[500] : theme.border,
+                }}
               >
                 <Text
-                  style={[styles.chipText, { color: selected ? '#fff' : theme.foreground }]}
+                  className="text-sm font-semibold"
+                  style={{ color: selected ? '#fff' : theme.foreground }}
                   numberOfLines={1}
                 >
                   {a.label}
@@ -269,38 +268,44 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
           })}
         </ScrollView>
 
-        <View style={[styles.toolRow, { borderTopColor: theme.border }]}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortRow}>
+        <View
+          className="flex-row items-center justify-between mt-2.5 pt-2.5 border-t"
+          style={{ borderTopColor: theme.border }}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}
+          >
             {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
               <Pressable
                 key={key}
                 onPress={() => setSortBy(key)}
-                style={[
-                  styles.sortChip,
-                  {
-                    backgroundColor: sortBy === key ? theme.primary[500] : theme.muted,
-                    borderColor: sortBy === key ? theme.primary[500] : theme.border,
-                  },
-                ]}
+                className="px-3 py-1.5 rounded-2xl border active:opacity-90"
+                style={{
+                  backgroundColor: sortBy === key ? theme.primary[500] : theme.muted,
+                  borderColor: sortBy === key ? theme.primary[500] : theme.border,
+                }}
               >
-                <Text style={[styles.chipText, { color: sortBy === key ? '#fff' : theme.foreground }]}>
+                <Text
+                  className="text-sm font-semibold"
+                  style={{ color: sortBy === key ? '#fff' : theme.foreground }}
+                >
                   {SORT_LABELS[key]}
                 </Text>
               </Pressable>
             ))}
           </ScrollView>
-          <View style={styles.cardSizeRow}>
-            {([ 'default', 'large'] as const).map((size) => (
+          <View className="flex-row items-center gap-1.5">
+            {(['default', 'large'] as const).map((size) => (
               <Pressable
                 key={size}
                 onPress={() => setCardSize(size)}
-                style={[
-                  styles.cardSizeBtn,
-                  { backgroundColor: cardSize === size ? theme.primary[500] : theme.muted },
-                ]}
+                className="w-9 h-9 rounded-full items-center justify-center active:opacity-90"
+                style={{ backgroundColor: cardSize === size ? theme.primary[500] : theme.muted }}
               >
                 <FontAwesome
-                  name={ size === 'default' ? 'th-large' : 'square-o'}
+                  name={size === 'default' ? 'th-large' : 'square-o'}
                   size={16}
                   color={cardSize === size ? '#fff' : theme.foreground}
                 />
@@ -311,11 +316,14 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
       </View>
 
       {loading && list.length === 0 ? (
-        <View style={[styles.gridContent, { paddingBottom: tabBarBottomPadding }]}>
+        <View
+          className="p-4"
+          style={{ paddingBottom: tabBarBottomPadding ?? PADDING }}
+        >
           {numColumns === 1
             ? Array.from({ length: 4 }).map((_, i) => (
-                <View key={i} style={styles.skeletonCell1}>
-                  <ContentCardSkeleton cardSize={cardSize} />
+                <View key={i} className="mb-3">
+                  <ContentCardSkeleton type={type} grid cardSize={cardSize} />
                 </View>
               ))
             : (() => {
@@ -328,10 +336,10 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
                   rows[rowIndex].push(i);
                 }
                 return rows.map((rowItems, rowIndex) => (
-                  <View key={rowIndex} style={styles.gridRow}>
+                  <View key={rowIndex} className="flex-row gap-3 mb-3">
                     {rowItems.map((i) => (
-                      <View key={i} style={styles.gridCell}>
-                        <ContentCardSkeleton cardSize={cardSize} />
+                      <View key={i} className="flex-1 min-w-0">
+                        <ContentCardSkeleton type={type} grid cardSize={cardSize} />
                       </View>
                     ))}
                   </View>
@@ -343,30 +351,40 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
           data={sortedList}
           keyExtractor={(item) => String(item.id)}
           numColumns={numColumns}
-          columnWrapperStyle={numColumns > 1 ? styles.gridRow : undefined}
-          contentContainerStyle={[styles.gridContent, { paddingBottom: tabBarBottomPadding }]}
+          columnWrapperStyle={numColumns > 1 ? { gap: GAP, marginBottom: GAP } : undefined}
+          contentContainerStyle={{ padding: PADDING, paddingBottom: tabBarBottomPadding ?? PADDING }}
           renderItem={({ item, index }) => (
-            <View style={styles.gridCell}>
+            <View className="flex-1 min-w-0">
               <ContentCard item={item} type={type} index={index} grid cardSize={cardSize} />
             </View>
           )}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.4}
           ListEmptyComponent={
-            <View style={styles.empty}>
+            <View className="flex-1 justify-center items-center py-12 gap-3">
               <FontAwesome
                 name={type === 'story' ? 'book' : type === 'video' ? 'video-camera' : 'gamepad'}
                 size={48}
                 color={theme.textSecondary}
               />
-              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>لا يوجد محتوى</Text>
+              <Text
+                className="text-base"
+                style={{ color: theme.textSecondary }}
+              >
+                لا يوجد محتوى
+              </Text>
             </View>
           }
           ListFooterComponent={
-            loadingMore ? (
-              <View style={styles.footerLoader}>
+            isFetchingNextPage ? (
+              <View className="flex-row items-center justify-center gap-2 py-4">
                 <ActivityIndicator size="small" color={theme.primary[500]} />
-                <Text style={[styles.footerLoaderText, { color: theme.textSecondary }]}>جاري تحميل المزيد...</Text>
+                <Text
+                  className="text-sm"
+                  style={{ color: theme.textSecondary }}
+                >
+                  جاري تحميل المزيد...
+                </Text>
               </View>
             ) : null
           }
@@ -375,153 +393,3 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  errorText: {
-    fontSize: 16,
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  retryBtn: {
-    marginTop: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 14,
-  },
-  retryText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  header: {
-    paddingHorizontal: PADDING,
-    paddingTop: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  titleIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    flex: 1,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    marginBottom: 10,
-    height: 44,
-  },
-  searchIcon: {
-    marginLeft: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 0,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  chipText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  toolRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-  },
-  sortRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  sortChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  cardSizeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  cardSizeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gridContent: {
-    padding: PADDING,
-    paddingBottom: PADDING,
-  },
-  gridRow: {
-    gap: GAP,
-    marginBottom: GAP,
-  },
-  gridCell: {
-    flex: 1,
-    minWidth: 0,
-  },
-  skeletonCell1: {
-    marginBottom: GAP,
-  },
-  empty: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 48,
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 16,
-  },
-  footerLoader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-  },
-  footerLoaderText: {
-    fontSize: 14,
-  },
-});

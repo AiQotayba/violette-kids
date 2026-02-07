@@ -188,7 +188,7 @@ export default function ProfileScreen() {
       </View>
 
       {/* المظهر — سهل للأطفال */}
-      {/* <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Text style={[styles.themeSectionTitle, { color: theme.text }]}>كيف تحب أن يظهر التطبيق؟</Text>
         <Text style={[styles.themeSectionHint, { color: theme.textSecondary }]}>اختر واحداً بالضغط عليه</Text>
         <View style={[styles.themeOptionsList, { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
@@ -220,7 +220,7 @@ export default function ProfileScreen() {
             isDark={colorScheme === 'dark'}
           />
         </View>
-      </View> */}
+      </View>
 
       {/* Achievements */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>

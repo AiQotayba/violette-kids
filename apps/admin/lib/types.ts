@@ -13,6 +13,7 @@ export interface Category {
   id: number
   name: string
   icon?: string | null
+  orderIndex?: number
 }
 
 export interface AgeGroup {
@@ -20,6 +21,7 @@ export interface AgeGroup {
   label: string
   ageMin: number
   ageMax: number
+  orderIndex?: number
 }
 
 export interface Content {
@@ -75,12 +77,14 @@ export interface ContentFormData {
 export interface CategoryFormData {
   name: string
   icon?: string
+  orderIndex?: number
 }
 
 export interface AgeGroupFormData {
   label: string
   ageMin: number
   ageMax: number
+  orderIndex?: number
 }
 
 export interface AdminFormData {

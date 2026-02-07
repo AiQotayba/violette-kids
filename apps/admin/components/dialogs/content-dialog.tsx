@@ -125,6 +125,7 @@ export function ContentDialog({
         const response = await api.put(`${apiEndpoint}/${content.id}`, payload)
         if (response.isError) throw new Error(response.message)
         toast.success("تم تحديث المحتوى بنجاح")
+        queryClient.invalidateQueries({ queryKey: ["table-data", apiEndpoint] })
       } else {
         const response = await api.post(apiEndpoint, payload)
         if (response.isError) throw new Error(response.message)
@@ -190,9 +191,9 @@ export function ContentDialog({
                 type="number"
                 min={0}
                 max={18}
-                {...register("ageMin", { 
+                {...register("ageMin", {
                   required: "العمر الأدنى مطلوب",
-                  valueAsNumber: true 
+                  valueAsNumber: true
                 })}
                 className="bg-secondary"
               />
@@ -204,9 +205,9 @@ export function ContentDialog({
                 type="number"
                 min={0}
                 max={18}
-                {...register("ageMax", { 
+                {...register("ageMax", {
                   required: "العمر الأقصى مطلوب",
-                  valueAsNumber: true 
+                  valueAsNumber: true
                 })}
                 className="bg-secondary"
               />

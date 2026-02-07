@@ -67,6 +67,7 @@ export default function CategoriesPage() {
         enableView={false}
         enableEdit={true}
         enableDelete={true}
+        enableReorder={true}
         actions={{
           onEdit: handleEdit,
         }}

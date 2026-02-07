@@ -10,6 +10,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
+import { QueryProvider } from '@/lib/QueryProvider';
 import { SettingsProvider, useEffectiveColorScheme } from '@/lib/settings/context';
 
 export {
@@ -48,9 +49,11 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <SettingsProvider>
-        <RootLayoutNav />
-      </SettingsProvider>
+      <QueryProvider>
+        <SettingsProvider>
+          <RootLayoutNav />
+        </SettingsProvider>
+      </QueryProvider>
     </SafeAreaProvider>
   );
 }
@@ -59,7 +62,9 @@ function RootLayoutNav() {
   const colorScheme = useEffectiveColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    // <ThemeProvider
+      // value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+    // >
       <View style={{ flex: 1, direction: 'rtl' }}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -74,6 +79,6 @@ function RootLayoutNav() {
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
       </View>
-    </ThemeProvider>
+    // </ThemeProvider>
   );
 }

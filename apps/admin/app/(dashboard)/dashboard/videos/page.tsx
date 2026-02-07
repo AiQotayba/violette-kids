@@ -137,6 +137,7 @@ export default function VideosPage() {
         enableView={true}
         enableEdit={true}
         enableDelete={true}
+        enableReorder={true}
         actions={{
           onView: handleView,
           onEdit: handleEdit,

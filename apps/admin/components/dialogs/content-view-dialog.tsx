@@ -13,6 +13,23 @@ import { Badge } from "@/components/ui/badge"
 import { BookOpen, Video, Gamepad2, Calendar, Clock, Link as LinkIcon } from "lucide-react"
 import type { Content } from "@/lib/types"
 
+function getYoutubeVideoId(url: string): string | null {
+  if (!url?.trim()) return null
+  const m = url.trim().match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/)
+  return m ? m[1] : null
+}
+
+function isPdfUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  return /\.pdf(\?|$)/i.test(url.trim())
+}
+
+function normalizePdfUrl(url: string): string {
+  if (url.startsWith("https:/-")) return "https://" + url.slice(8)
+  if (url.startsWith("http:/-")) return "http://" + url.slice(7)
+  return url
+}
+
 interface ContentViewDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -48,7 +65,7 @@ export function ContentViewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
@@ -58,7 +75,7 @@ export function ContentViewDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 flex flex-col justify-start max-w-md ">
           {/* Status Badges */}
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="bg-primary/10 text-primary">
@@ -92,6 +109,49 @@ export function ContentViewDialog({
               />
             </div>
           )}
+
+          {/* Video embed: فيديو أو لعبة برابط فيديو */}
+          {(content.type === "video" || content.type === "game") && content.contentUrl && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">عرض الفيديو</h4>
+              <div className="overflow-hidden rounded-xl border border-border bg-black/5 aspect-video w-full max-w-lg">
+                {getYoutubeVideoId(content.contentUrl) ? (
+                  <iframe
+                    title="فيديو يوتيوب"
+                    className="h-full w-full"
+                    src={`https://www.youtube.com/embed/${getYoutubeVideoId(content.contentUrl)}?playsinline=1`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                ) : (
+                  <iframe
+                    title="فيديو"
+                    className="h-full w-full"
+                    src={content.contentUrl}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* PDF embed: قصة أو لعبة بملف PDF */}
+          {(content.type === "story" || content.type === "game") &&
+            (isPdfUrl(content.fileUrl) || isPdfUrl(content.contentUrl)) && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-muted-foreground">عرض PDF</h4>
+                <div className="overflow-hidden rounded-xl border border-border bg-muted/30 w-full max-w-lg aspect-3/4 min-h-[420px]">
+                  <iframe
+                    title="ملف PDF"
+                    className="h-full w-full border-0"
+                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                      normalizePdfUrl(content.fileUrl || content.contentUrl || "")
+                    )}&embedded=true`}
+                  />
+                </div>
+              </div>
+            )}
 
           {/* Description */}
           {content.description && (

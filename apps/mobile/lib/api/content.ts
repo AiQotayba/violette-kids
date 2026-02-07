@@ -1,5 +1,12 @@
 import { api } from './client';
-import type { Content, PaginatedContent } from '@/types/content';
+import type { Content, ContentApiResponse, PaginatedContent } from '@/types/content';
+
+function normalizeContent(raw: ContentApiResponse): Content {
+  const { categories: rawCategories, ageGroups: rawAgeGroups, ...rest } = raw;
+  const categories = rawCategories?.map((c) => c.category);
+  const ageGroups = rawAgeGroups?.map((a) => a.ageGroup);
+  return { ...rest, categories, ageGroups };
+}
 
 export interface ContentListParams {
   age?: string;
@@ -24,5 +31,5 @@ export function getContentList(params?: ContentListParams): Promise<PaginatedCon
 }
 
 export function getContentById(id: number): Promise<Content> {
-  return api.get<Content>(`/content/${id}`);
+  return api.get<ContentApiResponse>(`/content/${id}`).then(normalizeContent);
 }

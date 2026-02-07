@@ -14,6 +14,8 @@ import {
   Plus,
   Filter,
   Loader2,
+  GripVertical,
+  Check,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -91,6 +93,10 @@ export interface DataTableProps<T extends object> {
   mockData?: T[]
   /** Page size options for limit selector (default: 10, 25, 50, 100) */
   limitOptions?: number[]
+  /** تفعيل الترتيب بالسحب والإفلات (يتطلب endpoint PATCH .../reorder مع body: { order: [{ id, orderIndex }] }) */
+  enableReorder?: boolean
+  /** مسار إعادة الترتيب (افتراضي: apiEndpoint/reorder) */
+  reorderEndpoint?: string
 }
 
 interface PaginationMeta {
@@ -174,6 +180,8 @@ function DataTableInner<T extends object>({
   onDeleteConfirm,
   mockData,
   limitOptions = [...LIMIT_OPTIONS],
+  enableReorder = false,
+  reorderEndpoint,
 }: DataTableProps<T>) {
   const router = useRouter()
   const pathname = usePathname()
@@ -189,6 +197,15 @@ function DataTableInner<T extends object>({
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [selectedRow, setSelectedRow] = React.useState<T | null>(null)
   const [isDeleting, setIsDeleting] = React.useState(false)
+  const [isReorderMode, setIsReorderMode] = React.useState(false)
+  const [reorderedData, setReorderedData] = React.useState<T[]>([])
+  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null)
+  const [isSavingOrder, setIsSavingOrder] = React.useState(false)
+
+  const resolvedReorderEndpoint = React.useMemo(
+    () => reorderEndpoint ?? `${apiEndpoint.replace(/\?.*$/, "")}/reorder`,
+    [apiEndpoint, reorderEndpoint]
+  )
 
   // Build query params
   const queryKey = React.useMemo(() => {
@@ -275,6 +292,65 @@ function DataTableInner<T extends object>({
     if (Array.isArray(apiData)) return apiData as T[]
     return []
   }, [queryData])
+
+  // عند تفعيل وضع الترتيب، نُهيئ القائمة من البيانات الحالية
+  React.useEffect(() => {
+    if (isReorderMode && data.length > 0) {
+      setReorderedData([...data])
+    }
+  }, [isReorderMode, data.length])
+
+  const displayData =
+    isReorderMode ? (reorderedData.length > 0 ? reorderedData : data) : data
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    if (draggedIndex === null) return
+    setReorderedData((prev) => {
+      const next = [...prev]
+      const [removed] = next.splice(draggedIndex, 1)
+      next.splice(dropIndex, 0, removed)
+      return next
+    })
+    setDraggedIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+  }
+
+  const handleSaveOrder = async () => {
+    try {
+      setIsSavingOrder(true)
+      const order = displayData.map((row, i) => ({
+        id: (row as { id: number }).id,
+        orderIndex: (page - 1) * limit + i,
+      }))
+      const response = await api.patch(resolvedReorderEndpoint, { order })
+      if (response.isError) throw new Error(response.message)
+      toast.success("تم حفظ الترتيب بنجاح")
+      queryClient.invalidateQueries({ queryKey: ["table-data", apiEndpoint] })
+      setIsReorderMode(false)
+    } catch {
+      toast.error("فشل حفظ الترتيب")
+    } finally {
+      setIsSavingOrder(false)
+    }
+  }
+
+  const handleCancelReorder = () => {
+    setIsReorderMode(false)
+    setDraggedIndex(null)
+  }
 
   const pagination: PaginationMeta = React.useMemo(() => {
     return (
@@ -421,12 +497,53 @@ function DataTableInner<T extends object>({
           )}
         </div>
 
-        {onAdd && (
-          <Button onClick={onAdd} className="gap-2">
-            <Plus className="h-4 w-4" />
-            {addLabel}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {enableReorder && !isReorderMode && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setIsReorderMode(true)}
+            >
+              <GripVertical className="h-4 w-4" />
+              ترتيب بالسحب والإفلات
+            </Button>
+          )}
+          {enableReorder && isReorderMode && (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                className="gap-2"
+                onClick={handleSaveOrder}
+                disabled={isSavingOrder}
+              >
+                {isSavingOrder ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+                {isSavingOrder ? "جاري الحفظ..." : "حفظ الترتيب"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCancelReorder}
+                disabled={isSavingOrder}
+              >
+                إلغاء
+              </Button>
+            </>
+          )}
+          {onAdd && !isReorderMode && (
+            <Button onClick={onAdd} className="gap-2">
+              <Plus className="h-4 w-4" />
+              {addLabel}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Table */}
@@ -434,6 +551,9 @@ function DataTableInner<T extends object>({
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-border">
+              {enableReorder && isReorderMode && (
+                <TableHead className="w-10 text-muted-foreground font-medium" />
+              )}
               {allColumns.map((column) => (
                 <TableHead
                   key={column.key}
@@ -488,10 +608,14 @@ function DataTableInner<T extends object>({
                   </TableRow>
                 ))}
               </>
-            ) : data.length === 0 ? (
+            ) : displayData.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={allColumns.length + (enableActions ? 1 : 0)}
+                  colSpan={
+                    allColumns.length +
+                    (enableActions ? 1 : 0) +
+                    (enableReorder && isReorderMode ? 1 : 0)
+                  }
                   className="h-32 text-center text-muted-foreground"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -501,11 +625,27 @@ function DataTableInner<T extends object>({
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((row) => (
+              displayData.map((row, rowIndex) => (
                 <TableRow
                   key={String((row as { id: number }).id)}
-                  className="border-b border-border/50 hover:bg-secondary/30"
+                  draggable={enableReorder && isReorderMode}
+                  onDragStart={() => enableReorder && isReorderMode && handleDragStart(rowIndex)}
+                  onDragOver={enableReorder && isReorderMode ? handleDragOver : undefined}
+                  onDrop={(e) => enableReorder && isReorderMode && handleDrop(e, rowIndex)}
+                  onDragEnd={enableReorder && isReorderMode ? handleDragEnd : undefined}
+                  className={cn(
+                    "border-b border-border/50 hover:bg-secondary/30",
+                    enableReorder && isReorderMode && "cursor-grab active:cursor-grabbing",
+                    draggedIndex === rowIndex && "opacity-50 bg-primary/5"
+                  )}
                 >
+                  {enableReorder && isReorderMode && (
+                    <TableCell className="w-10 p-2 text-muted-foreground">
+                      <div className="flex cursor-grab active:cursor-grabbing touch-none" aria-hidden>
+                        <GripVertical className="h-4 w-4" />
+                      </div>
+                    </TableCell>
+                  )}
                   {allColumns.map((column) => (
                     <TableCell key={column.key} className={column.className}>
                       {column.render
@@ -538,9 +678,9 @@ function DataTableInner<T extends object>({
                         )}
                         {enableDelete && (
                           <Button
-                            variant="ghost"
+                            variant="ghost" 
                             size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-destructive!"
                             onClick={() => handleDeleteClick(row)}
                           >
                             <Trash2 className="h-4 w-4" />

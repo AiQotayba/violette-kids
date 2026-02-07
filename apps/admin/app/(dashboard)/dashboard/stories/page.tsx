@@ -116,6 +116,7 @@ export default function StoriesPage() {
         enableView={true}
         enableEdit={true}
         enableDelete={true}
+        enableReorder={true}
         actions={{
           onView: handleView,
           onEdit: handleEdit,

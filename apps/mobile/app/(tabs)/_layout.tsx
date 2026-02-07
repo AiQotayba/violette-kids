@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,9 +11,6 @@ import { TAB_BAR_HEIGHT } from '@/lib/useTabBarBottomPadding';
 import { kidSpring } from '@/lib/animations/springs';
 
 const ICON_SIZE = 26;
-const PILL_RADIUS = 24;
-const PILL_PADDING_V = 10;
-const PILL_PADDING_H = 12;
 const BAR_RADIUS = 32;
 const BAR_MARGIN_H = 12;
 
@@ -43,7 +40,10 @@ function AnimatedTabPill({
   }));
 
   return (
-    <Animated.View style={[styles.pill, { backgroundColor: pillBg }, animatedStyle]}>
+    <Animated.View
+      className="rounded-[24px] py-2.5 px-3 self-center"
+      style={[{ backgroundColor: pillBg }, animatedStyle]}
+    >
       {children}
     </Animated.View>
   );
@@ -108,9 +108,13 @@ export default function TabLayout() {
         ? colors.tabBarActivePillBackground
         : colors.tabBarInactivePillBackground;
       return (
-        <View style={styles.tabItemOuter}>
+        <View className="flex-1 items-center justify-center">
           <AnimatedTabPill focused={focused} pillBg={pillBg}>
-            <Pressable {...props} style={[styles.tabItemInner, props.style as object]} />
+            <Pressable
+              {...props}
+              style={[props.style as object]}
+              className="flex-row items-center justify-center"
+            />
           </AnimatedTabPill>
         </View>
       );
@@ -149,22 +153,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  tabItemOuter: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pill: {
-    borderRadius: PILL_RADIUS,
-    paddingVertical: PILL_PADDING_V,
-    paddingHorizontal: PILL_PADDING_H,
-    alignSelf: 'center',
-  },
-  tabItemInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
