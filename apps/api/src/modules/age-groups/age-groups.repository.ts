@@ -1,7 +1,7 @@
 import { prisma } from "../../config/db.js";
 import { MAX_LIMIT } from "../../config/constants.js";
 
-const select = { id: true, label: true, ageMin: true, ageMax: true } as const;
+const select = { id: true, label: true, ageMin: true, ageMax: true, orderIndex: true } as const;
 
 export const ageGroupsRepository = {
   async findMany(filters: { limit: number; offset: number; search?: string }) {
@@ -12,7 +12,7 @@ export const ageGroupsRepository = {
       ? { label: { contains: search.trim(), mode: "insensitive" as const } }
       : {};
     const [data, total] = await Promise.all([
-      prisma.ageGroup.findMany({ where, select, orderBy: { ageMin: "asc" }, take: safeLimit, skip: safeOffset }),
+      prisma.ageGroup.findMany({ where, select, orderBy: [{ orderIndex: "asc" }, { ageMin: "asc" }], take: safeLimit, skip: safeOffset }),
       prisma.ageGroup.count({ where }),
     ]);
     return { data, total, limit: safeLimit, offset: safeOffset };
@@ -22,15 +22,24 @@ export const ageGroupsRepository = {
     return prisma.ageGroup.findUnique({ where: { id }, select });
   },
 
-  async create(data: { label: string; ageMin: number; ageMax: number }) {
-    return prisma.ageGroup.create({ data, select });
+  async create(data: { label: string; ageMin: number; ageMax: number; orderIndex?: number }) {
+    return prisma.ageGroup.create({ data: { ...data, orderIndex: data.orderIndex ?? 0 }, select });
   },
 
-  async update(id: number, data: { label?: string; ageMin?: number; ageMax?: number }) {
+  async update(id: number, data: { label?: string; ageMin?: number; ageMax?: number; orderIndex?: number }) {
     return prisma.ageGroup.update({ where: { id }, data, select });
   },
 
   async delete(id: number) {
     return prisma.ageGroup.delete({ where: { id } });
+  },
+
+  async reorder(updates: { id: number; orderIndex: number }[]) {
+    await prisma.$transaction(
+      updates.map(({ id, orderIndex }) =>
+        prisma.ageGroup.update({ where: { id }, data: { orderIndex } })
+      )
+    );
+    return updates;
   },
 };

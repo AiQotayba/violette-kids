@@ -6,4 +6,5 @@ export const ageGroupsService = {
   create: ageGroupsRepository.create.bind(ageGroupsRepository),
   update: ageGroupsRepository.update.bind(ageGroupsRepository),
   delete: ageGroupsRepository.delete.bind(ageGroupsRepository),
+  reorder: ageGroupsRepository.reorder.bind(ageGroupsRepository),
 };

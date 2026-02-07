@@ -39,9 +39,7 @@ export interface ContentPublicItem {
   ageGroups: ContentAgeGroupItem[];
 }
 
-export interface ContentPublicDetail extends ContentPublicItem {
-  pages?: { pageNumber: number; imageUrl: string; text: string | null }[];
-}
+export interface ContentPublicDetail extends ContentPublicItem {}
 
 export interface ContentListQuery {
   age?: string;

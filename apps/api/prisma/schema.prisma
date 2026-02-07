@@ -23,25 +23,14 @@ model Content {
   createdAt    DateTime          @default(now())
   ageGroups    ContentAgeGroup[]
   categories   ContentCategory[]
-  pages        ContentPage[]
-}
-
-model ContentPage {
-  id         Int     @id @default(autoincrement())
-  contentId  Int
-  pageNumber Int
-  imageUrl   String
-  text       String?
-  content    Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-
-  @@unique([contentId, pageNumber])
 }
 
 model Category {
-  id       Int               @id @default(autoincrement())
-  name     String            @unique
-  icon     String?
-  contents ContentCategory[]
+  id         Int               @id @default(autoincrement())
+  name       String            @unique
+  icon       String?
+  orderIndex Int               @default(0)
+  contents   ContentCategory[]
 }
 
 model ContentCategory {
@@ -58,6 +47,7 @@ model AgeGroup {
   label    String            @unique
   ageMin   Int
   ageMax   Int
+  orderIndex Int             @default(0)
   contents ContentAgeGroup[]
 }
 
@@ -71,17 +61,19 @@ model ContentAgeGroup {
 }
 
 model Admin {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
 }
 
 model AppSetting {
-  id    Int    @id @default(autoincrement())
-  key   String @unique
-  value String
+  id         Int    @id @default(autoincrement())
+  key        String @unique
+  value      String
+  orderIndex Int    @default(0)
 }
 
 enum ContentType {
@@ -95,3 +87,4 @@ enum ContentSourceType {
   youtube
   external
 }
+

@@ -82,13 +82,7 @@ export const contentRepository = {
   async findByIdPublic(id: number) {
     return prisma.content.findFirst({
       where: { id, isActive: true },
-      select: {
-        ...contentSelect,
-        pages: {
-          orderBy: { pageNumber: "asc" },
-          select: { pageNumber: true, imageUrl: true, text: true },
-        },
-      },
+      select: contentSelect,
     });
   },
 
@@ -148,7 +142,6 @@ export const contentRepository = {
         createdAt: true,
         categories: { select: { categoryId: true, category: { select: { id: true, name: true, icon: true } } } },
         ageGroups: { select: { ageGroupId: true, ageGroup: { select: { id: true, label: true, ageMin: true, ageMax: true } } } },
-        pages: { orderBy: { pageNumber: "asc" }, select: { id: true, pageNumber: true, imageUrl: true, text: true } },
       },
     });
   },
@@ -167,9 +160,8 @@ export const contentRepository = {
     orderIndex?: number;
     categoryIds?: number[];
     ageGroupIds?: number[];
-    pages?: { pageNumber: number; imageUrl: string; text?: string | null }[];
   }) {
-    const { categoryIds, ageGroupIds, pages: pagesData, ...rest } = data;
+    const { categoryIds, ageGroupIds, ...rest } = data;
     return prisma.content.create({
       data: {
         ...rest,
@@ -178,9 +170,6 @@ export const contentRepository = {
           : {}),
         ...(ageGroupIds?.length
           ? { ageGroups: { create: ageGroupIds.map((ageGroupId) => ({ ageGroupId })) } }
-          : {}),
-        ...(pagesData?.length
-          ? { pages: { create: pagesData.map((p) => ({ pageNumber: p.pageNumber, imageUrl: p.imageUrl, text: p.text ?? null })) } }
           : {}),
       },
       select: contentSelect,
@@ -231,5 +220,14 @@ export const contentRepository = {
 
   async delete(id: number) {
     return prisma.content.delete({ where: { id } });
+  },
+
+  async reorder(updates: { id: number; orderIndex: number }[]) {
+    await prisma.$transaction(
+      updates.map(({ id, orderIndex }) =>
+        prisma.content.update({ where: { id }, data: { orderIndex } })
+      )
+    );
+    return updates;
   },
 };

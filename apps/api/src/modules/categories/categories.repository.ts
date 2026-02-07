@@ -1,7 +1,7 @@
 import { prisma } from "../../config/db.js";
 import { MAX_LIMIT } from "../../config/constants.js";
 
-const select = { id: true, name: true, icon: true } as const;
+const select = { id: true, name: true, icon: true, orderIndex: true } as const;
 
 export const categoriesRepository = {
   async findMany(filters: { limit: number; offset: number; search?: string }) {
@@ -12,7 +12,7 @@ export const categoriesRepository = {
       ? { name: { contains: search.trim(), mode: "insensitive" as const } }
       : {};
     const [data, total] = await Promise.all([
-      prisma.category.findMany({ where, select, orderBy: { name: "asc" }, take: safeLimit, skip: safeOffset }),
+      prisma.category.findMany({ where, select, orderBy: [{ orderIndex: "asc" }, { name: "asc" }], take: safeLimit, skip: safeOffset }),
       prisma.category.count({ where }),
     ]);
     return { data, total, limit: safeLimit, offset: safeOffset };
@@ -22,15 +22,24 @@ export const categoriesRepository = {
     return prisma.category.findUnique({ where: { id }, select });
   },
 
-  async create(data: { name: string; icon?: string | null }) {
-    return prisma.category.create({ data, select });
+  async create(data: { name: string; icon?: string | null; orderIndex?: number }) {
+    return prisma.category.create({ data: { ...data, orderIndex: data.orderIndex ?? 0 }, select });
   },
 
-  async update(id: number, data: { name?: string; icon?: string | null }) {
+  async update(id: number, data: { name?: string; icon?: string | null; orderIndex?: number }) {
     return prisma.category.update({ where: { id }, data, select });
   },
 
   async delete(id: number) {
     return prisma.category.delete({ where: { id } });
+  },
+
+  async reorder(updates: { id: number; orderIndex: number }[]) {
+    await prisma.$transaction(
+      updates.map(({ id, orderIndex }) =>
+        prisma.category.update({ where: { id }, data: { orderIndex } })
+      )
+    );
+    return updates;
   },
 };

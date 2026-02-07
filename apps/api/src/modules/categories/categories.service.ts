@@ -6,4 +6,5 @@ export const categoriesService = {
   create: categoriesRepository.create.bind(categoriesRepository),
   update: categoriesRepository.update.bind(categoriesRepository),
   delete: categoriesRepository.delete.bind(categoriesRepository),
+  reorder: categoriesRepository.reorder.bind(categoriesRepository),
 };

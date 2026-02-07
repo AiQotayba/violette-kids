@@ -39,6 +39,14 @@ const createBodySchema = z
 
 const updateBodySchema = createBodySchema.partial();
 
+const reorderBodySchema = z
+  .object({
+    order: z.array(
+      z.object({ id: z.number().int().positive(), orderIndex: z.number().int().min(0) })
+    ),
+  })
+  .strict();
+
 export const contentController = {
   async listPublic(req: Request, res: Response): Promise<void> {
     const parsed = querySchema.safeParse(req.query);
@@ -148,6 +156,20 @@ export const contentController = {
         sendError(res, "Content not found", 404);
         return;
       }
+      sendError(res, (e as Error).message, 500);
+    }
+  },
+
+  async reorder(req: Request, res: Response): Promise<void> {
+    const parsed = reorderBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
+      return;
+    }
+    try {
+      await contentService.reorder(parsed.data.order);
+      sendSuccess(res, { order: parsed.data.order });
+    } catch (e) {
       sendError(res, (e as Error).message, 500);
     }
   },

@@ -245,6 +245,38 @@ adminRouter.put("/:id", authMiddleware, contentController.update);
  */
 adminRouter.delete("/:id", authMiddleware, contentController.delete);
 
+/**
+ * @openapi
+ * /admin/content/reorder:
+ *   patch:
+ *     tags: [Admin_Content]
+ *     summary: تحديث ترتيب المحتوى
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [order]
+ *             properties:
+ *               order:
+ *                 type: array
+ *                 items: { type: object, required: [id, orderIndex], properties: { id: { type: integer }, orderIndex: { type: integer } } }
+ *     responses:
+ *       200:
+ *         description: تم تحديث الترتيب
+ *       400:
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       401:
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+adminRouter.patch("/reorder", authMiddleware, contentController.reorder);
+
 export const contentRoutes: { public: Router; admin: Router } = {
   public: publicRouter,
   admin: adminRouter,

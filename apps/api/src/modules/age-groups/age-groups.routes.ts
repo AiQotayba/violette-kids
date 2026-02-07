@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { ageGroupsController } from "./age-groups.controller.js";
+import { authMiddleware } from "../admin/auth.middleware.js";
 
 const publicRouter = Router();
 
@@ -100,6 +101,8 @@ adminRouter.get("/", ageGroupsController.listAdmin);
  *             schema: { $ref: '#/components/schemas/Error' }
  */
 adminRouter.post("/", ageGroupsController.create);
+
+adminRouter.patch("/reorder", authMiddleware, ageGroupsController.reorder);
 
 /**
  * @openapi

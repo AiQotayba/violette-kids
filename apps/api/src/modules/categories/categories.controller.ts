@@ -11,8 +11,9 @@ const querySchema = z.object({
 });
 
 const idParamSchema = z.object({ id: z.coerce.number().int().positive() });
-const createSchema = z.object({ name: z.string().min(1), icon: z.string().nullable().optional() }).strict();
-const updateSchema = z.object({ name: z.string().min(1).optional(), icon: z.string().nullable().optional() }).strict();
+const createSchema = z.object({ name: z.string().min(1), icon: z.string().nullable().optional(), orderIndex: z.number().int().min(0).optional() }).strict();
+const updateSchema = z.object({ name: z.string().min(1).optional(), icon: z.string().nullable().optional(), orderIndex: z.number().int().min(0).optional() }).strict();
+const reorderSchema = z.object({ order: z.array(z.object({ id: z.number().int().positive(), orderIndex: z.number().int().min(0) })) }).strict();
 
 export const categoriesController = {
   async listPublic(req: Request, res: Response): Promise<void> {
@@ -106,6 +107,20 @@ export const categoriesController = {
       const err = e as Error & { code?: string };
       if (err.code === "P2025") sendError(res, "Category not found", 404);
       else sendError(res, (e as Error).message, 500);
+    }
+  },
+
+  async reorder(req: Request, res: Response): Promise<void> {
+    const parsed = reorderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      sendError(res, parsed.error.issues.map((e: { message: string }) => e.message).join("; "), 400);
+      return;
+    }
+    try {
+      await categoriesService.reorder(parsed.data.order);
+      sendSuccess(res, { order: parsed.data.order });
+    } catch (e) {
+      sendError(res, (e as Error).message, 500);
     }
   },
 };

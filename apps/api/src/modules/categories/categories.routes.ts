@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { categoriesController } from "./categories.controller.js";
+import { authMiddleware } from "../admin/auth.middleware.js";
 
 const publicRouter = Router();
 
@@ -100,6 +101,8 @@ adminRouter.get("/", categoriesController.listAdmin);
  *             schema: { $ref: '#/components/schemas/Error' }
  */
 adminRouter.post("/", categoriesController.create);
+
+adminRouter.patch("/reorder", authMiddleware, categoriesController.reorder);
 
 /**
  * @openapi

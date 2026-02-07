@@ -123,7 +123,6 @@ export const contentService = {
       orderIndex: row.orderIndex,
       categories: mapCategories(row.categories),
       ageGroups: mapAgeGroups(row.ageGroups),
-      pages: row.pages?.map((p: { pageNumber: number; imageUrl: string; text: string | null }) => ({ pageNumber: p.pageNumber, imageUrl: p.imageUrl, text: p.text })) ?? [],
     };
   },
 
@@ -171,5 +170,10 @@ export const contentService = {
 
   async delete(id: number) {
     return contentRepository.delete(id);
+  },
+
+  async reorder(updates: { id: number; orderIndex: number }[]) {
+    if (!updates.length) return [];
+    return contentRepository.reorder(updates);
   },
 };
