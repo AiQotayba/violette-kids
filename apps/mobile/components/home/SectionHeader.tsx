@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Animated, {
   useAnimatedStyle,
@@ -6,8 +6,8 @@ import Animated, {
   withSpring,
   FadeInRight,
 } from 'react-native-reanimated';
+import Colors from '@/constants/Colors';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
-import { lightTheme, darkTheme } from '@/lib/theme';
 import { kidSpring } from '@/lib/animations/springs';
 
 type SectionType = 'stories' | 'videos' | 'games';
@@ -32,10 +32,10 @@ interface SectionHeaderProps {
 }
 
 export function SectionHeader({ type, onViewAll, index = 0 }: SectionHeaderProps) {
-  const isDark = useEffectiveColorScheme() === 'dark';
-  const theme = isDark ? darkTheme : lightTheme;
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const config = SECTION_CONFIG[type];
-  const tint = theme[config.colorKey];
+  const tint = colors[config.colorKey];
 
   const scale = useSharedValue(1);
   const animatedBtnStyle = useAnimatedStyle(() => ({
@@ -45,13 +45,16 @@ export function SectionHeader({ type, onViewAll, index = 0 }: SectionHeaderProps
   return (
     <Animated.View
       entering={FadeInRight.delay(index * 80).duration(350).springify()}
-      style={styles.row}
+      className="flex-row items-center justify-between px-4 mb-4"
     >
-      <View style={styles.left}>
-        <View style={[styles.iconBox, { backgroundColor: `${tint}22` }]}>
+      <View className="flex-row items-center gap-3">
+        <View
+          className="w-10 h-10 rounded-xl items-center justify-center"
+          style={{ backgroundColor: `${tint}22` }}
+        >
           <FontAwesome name={config.icon} size={24} color={tint} />
         </View>
-        <Text style={[styles.title, { color: theme.foreground }]}>
+        <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
           {config.title}
         </Text>
       </View>
@@ -63,61 +66,31 @@ export function SectionHeader({ type, onViewAll, index = 0 }: SectionHeaderProps
         onPressOut={() => {
           scale.value = withSpring(1, kidSpring.press);
         }}
-        style={styles.pressableHitSlop}
+        className="min-h-12 min-w-12"
       >
         <Animated.View
           style={[
-            styles.viewAllBtn,
             {
-              backgroundColor: isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              paddingHorizontal: 18,
+              paddingVertical: 14,
+              borderRadius: 16,
+              minHeight: 48,
+              minWidth: 100,
+              backgroundColor: `${colors.primary[500]}22`,
             },
             animatedBtnStyle,
           ]}
         >
-          <Text style={[styles.viewAllText, { color: theme.primary[500] }]}>
+          <Text className="text-[15px] font-bold" style={{ color: colors.primary[500] }}>
             عرض الكل
           </Text>
-          <FontAwesome
-            name="chevron-left"
-            size={12}
-            color={theme.primary[500]}
-            style={styles.chevron}
-          />
+          <FontAwesome name="chevron-left" size={12} color={colors.primary[500]} style={{ marginTop: 1 }} />
         </Animated.View>
       </Pressable>
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  left: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
-  pressableHitSlop: { minHeight: 48, minWidth: 48 },
-  viewAllBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderRadius: 16,
-    minHeight: 48,
-    minWidth: 100,
-  },
-  viewAllText: { fontSize: 15, fontWeight: '700' },
-  chevron: { marginTop: 1 },
-});

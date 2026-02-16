@@ -88,10 +88,10 @@ export function SettingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "تعديل الإعداد" : "إضافة إعداد جديد"}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle dir="rtl">{isEdit ? "تعديل الإعداد" : "إضافة إعداد جديد"}</DialogTitle>
+          <DialogDescription dir="rtl">
             {isEdit ? "قم بتعديل قيمة الإعداد" : "أدخل مفتاح وقيمة الإعداد الجديد"}
           </DialogDescription>
         </DialogHeader>

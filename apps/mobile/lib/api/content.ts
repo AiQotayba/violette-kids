@@ -1,9 +1,8 @@
-import { api } from './client';
 import type { Content, ContentApiResponse, PaginatedContent } from '@/types/content';
+import { api } from './client';
 
-function normalizeContent(raw: ContentApiResponse): Content {
-  const { categories: rawCategories, ageGroups: rawAgeGroups, ...rest } = raw;
-  const categories = rawCategories?.map((c) => c.category);
+function normalizeContent(raw: ContentApiResponse): any {
+  const { categories, ageGroups: rawAgeGroups, ...rest } = raw;
   const ageGroups = rawAgeGroups?.map((a) => a.ageGroup);
   return { ...rest, categories, ageGroups };
 }

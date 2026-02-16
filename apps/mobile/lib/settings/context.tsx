@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
 import { setApiBaseUrl as setClientApiBaseUrl } from '@/lib/api/client';
 
 export type Language = 'ar' | 'en';
@@ -58,12 +57,7 @@ export function useSettings(): SettingsContextValue {
   return ctx;
 }
 
-/** الثيم الفعّال: system يتبع جهاز المستخدم، وإلا القيمة المختارة */
+/** الثيم الفعّال: التطبيق يعمل دائماً بالوضع الفاتح (light) */
 export function useEffectiveColorScheme(): 'light' | 'dark' {
-  const system = useColorScheme();
-  const { themePreference } = useSettings();
-  if (themePreference === 'system') {
-    return system === 'dark' ? 'dark' : 'light';
-  }
-  return themePreference;
+  return 'light';
 }

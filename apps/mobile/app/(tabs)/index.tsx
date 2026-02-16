@@ -1,22 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import {
-  ScrollView,
-  Text,
-  View,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { getContentList } from '@/lib/api';
 import { ContentCard } from '@/components/cards/ContentCard';
 import { HomeHero } from '@/components/home/HomeHero';
-import { SectionHeader } from '@/components/home/SectionHeader';
+import Colors from '@/constants/Colors';
+import { getContentList } from '@/lib/api';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { useTabBarBottomPadding } from '@/lib/useTabBarBottomPadding';
-import { lightTheme, darkTheme } from '@/lib/theme';
 import type { Content } from '@/types/content';
+import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 async function fetchHomeContent(): Promise<{
   stories: Content[];
@@ -31,64 +24,70 @@ async function fetchHomeContent(): Promise<{
   return { stories: s.data, games: g.data, videos: v.data };
 }
 
+const PART_TYPE_TO_CARD_TYPE: Record<'stories' | 'videos' | 'games', 'story' | 'video' | 'game'> = {
+  stories: 'story',
+  videos: 'video',
+  games: 'game',
+};
+
+const SECTION_CONFIG: Record<'stories' | 'videos' | 'games', { title: string; icon: React.ComponentProps<typeof Ionicons>['name']; description: string; colorKey: 'stories' | 'videos' | 'games' }> = {
+  stories: {
+    title: 'القصص',
+    icon: 'book',
+    description: 'قصص ممتعة تساعد الأطفال على النمو والاستمتاع كل يوم.',
+    colorKey: 'stories',
+  },
+  videos: {
+    title: 'الفيديوهات',
+    icon: 'play-circle',
+    description: 'فيديوهات تعليمية وترفيهية مناسبة للأطفال.',
+    colorKey: 'videos',
+  },
+  games: {
+    title: 'الألعاب',
+    icon: 'game-controller',
+    description: 'ألعاب تفاعلية ممتعة تنمي المهارات.',
+    colorKey: 'games',
+  },
+};
+
 export default function HomeScreen() {
   const router = useRouter();
-  const isDark = useEffectiveColorScheme() === 'dark';
-  const theme = isDark ? darkTheme : lightTheme;
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const tabBarBottomPadding = useTabBarBottomPadding();
-  const {
-    data,
-    isPending: loading,
-    error,
-    refetch,
-  } = useQuery({
+  const { data, isPending: loading, error } = useQuery({
     queryKey: ['home', 'content'],
     queryFn: fetchHomeContent,
-    // 30 seconds
     staleTime: 3000,
     gcTime: 3000,
     refetchOnWindowFocus: false,
   });
 
+
   const stories = data?.stories ?? [];
   const games = data?.games ?? [];
   const videos = data?.videos ?? [];
-  const errorMessage =
-    error instanceof Error ? error.message : error ? 'حدث خطأ' : null;
-
+  const errorMessage = error instanceof Error ? error.message : error ? 'حدث خطأ' : null;
 
   if (errorMessage && stories.length === 0) {
     return (
       <View
         className="flex-1 justify-center items-center p-6"
-        style={{ backgroundColor: theme.background }}
+        style={{ backgroundColor: colors.background }}
       >
         <View
           className="w-[88px] h-[88px] rounded-full items-center justify-center mb-5"
-          style={{ backgroundColor: `${theme.error}18` }}
+          style={{ backgroundColor: `${colors.error}18` }}
         >
-          <FontAwesome name="exclamation-circle" size={48} color={theme.error} />
+          <Ionicons name="alert-circle" size={48} color={colors.error} />
         </View>
-        <Text
-          className="text-xl font-bold mb-2"
-          style={{ color: theme.foreground }}
-        >
+        <Text className="text-xl font-bold mb-2" style={{ color: colors.foreground }}>
           لا يمكن تحميل المحتوى
         </Text>
-        <Text
-          className="text-[15px] text-center mb-6"
-          style={{ color: theme.textSecondary }}
-        >
+        <Text className="text-[15px] text-center mb-6" style={{ color: colors.textSecondary }}>
           {errorMessage}
         </Text>
-        {/* <Pressable
-          onPress={() => refetch()}
-          className="flex-row items-center gap-2.5 px-6 py-3.5 rounded-[20px] active:opacity-90"
-          style={{ backgroundColor: theme.primary[500] }}
-        >
-          <FontAwesome name="refresh" size={18} color="#fff" />
-          <Text className="text-white text-base font-bold">إعادة المحاولة</Text>
-        </Pressable> */}
       </View>
     );
   }
@@ -96,21 +95,40 @@ export default function HomeScreen() {
   return (
     <ScrollView
       className="flex-1"
-      style={{ backgroundColor: theme.background }}
+      style={{ backgroundColor: "#eeeeee" }}
       contentContainerStyle={{ paddingBottom: tabBarBottomPadding ?? 24 }}
       showsVerticalScrollIndicator={false}
     >
       <HomeHero />
-      <Part type="stories" items={stories} loading={loading} index={0} onViewAll={() => router.push('/(tabs)/stories' as never)} />
-      <Part type="videos" items={videos} loading={loading} index={1} onViewAll={() => router.push('/(tabs)/videos' as never)} />
-      <Part type="games" items={games} loading={loading} index={2} onViewAll={() => router.push('/(tabs)/games' as never)} />
+      <Part
+        type="stories"
+        items={stories}
+        loading={loading}
+        index={0}
+        onViewAll={() => router.push('/(tabs)/stories' as never)}
+      />
+      <Part
+        type="videos"
+        items={videos}
+        loading={loading}
+        index={1}
+        onViewAll={() => router.push('/(tabs)/videos' as never)}
+      />
+      <Part
+        type="games"
+        items={games}
+        loading={loading}
+        index={2}
+        onViewAll={() => router.push('/(tabs)/games' as never)}
+      />
     </ScrollView>
   );
 }
-const PART_TYPE_TO_CARD_TYPE: Record<'stories' | 'videos' | 'games', 'story' | 'video' | 'game'> = {
-  stories: 'story',
-  videos: 'video',
-  games: 'game',
+
+const SECTION_TINT_KEY: Record<'stories' | 'videos' | 'games', 'tabPillStories' | 'tabPillVideos' | 'tabPillGames'> = {
+  stories: 'tabPillStories',
+  videos: 'tabPillVideos',
+  games: 'tabPillGames',
 };
 
 function Part({
@@ -126,21 +144,45 @@ function Part({
   items: Content[];
   loading: boolean;
 }) {
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const cardType = PART_TYPE_TO_CARD_TYPE[type];
+  const config = SECTION_CONFIG[type];
+  const sectionColor = colors[SECTION_TINT_KEY[type]];
+
   return (
     <Animated.View
-      entering={FadeInDown.delay(80).duration(400).springify()}
-      className="py-6"
+      entering={FadeInDown.delay(80 + index * 60).duration(400).springify()}
+      className="mx-4 mb-6 rounded-3xl border overflow-hidden"
+      style={{ backgroundColor: colors.card, borderColor: colors.border }}
     >
-      <SectionHeader
-        type={type}
-        index={index}
-        onViewAll={onViewAll}
-      />
+      <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
+        <View className="flex-row items-center gap-3">
+          <View
+            className="w-11 h-11 rounded-2xl items-center justify-center"
+            style={{ backgroundColor: `${sectionColor}22` }}
+          >
+            <Ionicons name={config.icon} size={24} color={sectionColor} />
+          </View>
+          <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
+            {config.title}
+          </Text>
+        </View>
+        <Pressable
+          onPress={onViewAll}
+          className="w-10 h-10 rounded-full items-center justify-center active:opacity-80"
+          style={{ backgroundColor: colors.muted }}
+        >
+          <Ionicons name="arrow-forward" size={18} color={colors.foreground} style={{ transform: [{ rotate: '180deg' }] }} />
+        </Pressable>
+      </View>
+      <Text className="text-sm px-4 pb-3" style={{ color: colors.textSecondary }} numberOfLines={2}>
+        {config.description}
+      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 4 }}
+        contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 16, gap: 8 }}
       >
         {items.map((item: Content, i: number) => (
           <ContentCard key={item.id} item={item} type={cardType} index={i} loading={loading} />

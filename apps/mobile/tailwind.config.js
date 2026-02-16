@@ -6,7 +6,13 @@ module.exports = {
   ],
   presets: [require('nativewind/preset')],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Tajawal_400Regular'],
+        heading: ['Tajawal_700Bold'],
+        numeric: ['Tajawal_500Medium'],
+      },
+    },
   },
   plugins: [],
 };

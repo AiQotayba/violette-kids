@@ -1,92 +1,99 @@
+import Colors from '@/constants/Colors';
+import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { StyleProp, View, ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { useEffectiveColorScheme } from '@/lib/settings/context';
-import { lightTheme, darkTheme } from '@/lib/theme';
 import type { CardSize } from './ContentCard';
 
 export interface ContentCardSkeletonProps {
-  /** نوع البطاقة: قصة (3:4)، فيديو/لعبة (16:9) */
   type: 'story' | 'game' | 'video';
-  /** عند true يُستخدم داخل شبكة */
   grid?: boolean;
-  /** حجم البطاقة: compact، default، large */
   cardSize?: CardSize;
+  style?: StyleProp<ViewStyle>;
 }
+
+const RADIUS = 20;
+const TITLE_BLOCK_HEIGHT = 52;
 
 export function ContentCardSkeleton({
   type,
   grid = false,
-  cardSize = 'default',
+  style,
 }: ContentCardSkeletonProps) {
-  const isDark = useEffectiveColorScheme() === 'dark';
-  const theme = isDark ? darkTheme : lightTheme;
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const pulse = useSharedValue(0.5);
 
   useEffect(() => {
-    pulse.value = withRepeat(
-      withTiming(0.85, { duration: 900 }),
-      -1,
-      true
-    );
-    return () => {
-      pulse.value = 0.5;
-    };
-  }, []);
+    pulse.value = withRepeat(withTiming(0.75, { duration: 700 }), -1, true);
+  }, [pulse]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: pulse.value,
-  }));
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
   const isStory = type === 'story';
-  /** كتب: طولية. فيديو/ألعاب: عرضية (نفس قياس ContentCard) */
-  const CARD_WIDTH_BOOK = 148;
-  const CARD_WIDTH_MEDIA = 208;
+  const CARD_WIDTH_BOOK = 150;
+  const CARD_WIDTH_MEDIA = 192;
   const cardWidth = grid ? undefined : isStory ? CARD_WIDTH_BOOK : CARD_WIDTH_MEDIA;
-  const bg = theme.muted;
+  const typeColor = type === 'story' ? colors.stories : type === 'video' ? colors.videos : colors.games;
 
   return (
     <View
-      className={grid ? 'flex-1 min-w-0 mx-1.5' : 'mx-2'}
-      style={cardWidth != null ? { width: cardWidth } : undefined}
+      style={[
+        grid && { flex: 1, minWidth: 0 },
+        !grid && cardWidth != null && { width: cardWidth },
+        !grid && { marginHorizontal: 8 },
+        style,
+      ]}
     >
       <View
-        className={`rounded-[20px] overflow-hidden bg-transparent ${isStory ? 'min-h-[54px] min-w-[44px]' : ''}`}
+        style={{
+          borderRadius: RADIUS,
+          backgroundColor: colors.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+          overflow: 'hidden',
+        }}
       >
         <Animated.View
-          className={`w-full overflow-hidden ${isStory ? 'aspect-[3/4]' : 'aspect-video rounded-[20px]'}`}
-          style={[{ backgroundColor: bg }, animatedStyle]}
+          style={[
+            {
+              width: '100%',
+              aspectRatio: isStory ? 3 / 4 : 16 / 9,
+              backgroundColor: colors.muted, 
+            },
+            animatedStyle,
+          ]}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            minHeight: TITLE_BLOCK_HEIGHT,
+            height: TITLE_BLOCK_HEIGHT,
+            paddingVertical: 8,
+            paddingHorizontal: 10,
+            paddingRight: 10, 
+            alignItems: 'center',
+            gap: 8,
+          }}
         >
-          {isStory && (
-            <View className="absolute left-0 right-0 bottom-0 px-3.5 py-3.5 gap-2">
-              <Animated.View
-                className="h-3 rounded-md w-[85%]"
-                style={[{ backgroundColor: theme.textSecondary }, animatedStyle]}
-              />
-              <Animated.View
-                className="h-3 rounded-md w-1/2"
-                style={[{ backgroundColor: theme.textSecondary }, animatedStyle]}
-              />
-            </View>
-          )}
-        </Animated.View>
-        {!isStory && (
-          <View className="mt-2.5 px-1 gap-2">
-            <Animated.View
-              className="h-3 rounded-md w-[85%]"
-              style={[{ backgroundColor: bg }, animatedStyle]}
-            />
-            <Animated.View
-              className="h-3 rounded-md w-1/2"
-              style={[{ backgroundColor: bg }, animatedStyle]}
-            />
-          </View>
-        )}
+          <Animated.View
+            style={[
+              { flex: 1, height: 14, borderRadius: 6, backgroundColor: colors.muted },
+              animatedStyle,
+            ]}
+          />
+          <Animated.View
+            style={[
+              { width: '35%', height: 14, borderRadius: 6, backgroundColor: colors.muted },
+              animatedStyle,
+            ]}
+          />
+        </View>
       </View>
     </View>
   );

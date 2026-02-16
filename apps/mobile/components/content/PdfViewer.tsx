@@ -1,10 +1,18 @@
-import { useState } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import Colors from '@/constants/Colors';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
-import { lightTheme, darkTheme } from '@/lib/theme';
+import { Directory, File, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
+import { WebView } from 'react-native-webview';
 
-/** إصلاح رابط قد يكون خاطئاً (مثلاً https:/- بدل https://) */
 function normalizePdfUrl(url: string): string {
   if (url.startsWith('https:/-')) {
     return url.replace('https:/-', 'https://');
@@ -15,72 +23,81 @@ function normalizePdfUrl(url: string): string {
   return url;
 }
 
-/** عرض PDF داخل WebView (يعمل في Expo Go بدون native modules) */
 export interface PdfViewerProps {
-  /** رابط ملف الـ PDF */
   uri: string;
 }
 
 export function PdfViewer({ uri }: PdfViewerProps) {
   const [error, setError] = useState(false);
-  const isDark = useEffectiveColorScheme() === 'dark';
-  const theme = isDark ? darkTheme : lightTheme;
+  const [downloading, setDownloading] = useState(false);
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const pdfUrl = normalizePdfUrl(uri);
   const { width } = Dimensions.get('window');
   const pdfHeight = Math.max(400, Dimensions.get('window').height * 0.55);
   const contentWidth = width - 32;
-  // Google Docs viewer يعرض الـ PDF بشكل متوافق مع الجوال
   const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+
+  const handleDownload = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const dir = new Directory(Paths.document, 'downloads');
+      dir.create({ intermediates: true, idempotent: true });
+      const downloaded = await File.downloadFileAsync(pdfUrl, dir);
+      setDownloading(false);
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare && downloaded?.uri) {
+        await Sharing.shareAsync(downloaded.uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'حفظ أو مشاركة الملف',
+        });
+      } else {
+        Alert.alert('تم التحميل', 'تم حفظ الملف. يمكنك فتحه من جهازك.');
+      }
+    } catch (err: unknown) {
+      setDownloading(false);
+      const message = err instanceof Error ? err.message : 'لم نتمكن من تحميل الملف. جرّب مرة أخرى.';
+      Alert.alert('خطأ', message);
+    }
+  };
 
   if (error) {
     return (
-      <View style={[styles.errorBox, { backgroundColor: theme.muted }]}>
-        <Text style={[styles.errorText, { color: theme.textSecondary }]}>
-          تعذر تحميل ملف PDF
-        </Text>
-        <Text style={[styles.errorSub, { color: theme.textSecondary }]}>
-          استخدم زر «فتح في المتصفح» أدناه
+      <View className="p-6 rounded-xl my-4 items-center" style={{ backgroundColor: colors.muted }}>
+        <Text className="text-base font-semibold text-center" style={{ color: colors.textSecondary }}>
+          لم نتمكن من عرض الملف
         </Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.wrapper, { width: contentWidth, height: pdfHeight }]}>
-      <WebView
-        source={{ uri: viewerUrl }}
-        style={styles.webview}
-        onError={() => setError(true)}
-        onHttpError={() => setError(true)}
-        scrollEnabled={true}
-      />
+    <View className="my-4">
+      <View
+        className="self-center rounded-xl overflow-hidden flex-1"
+        style={{ width: contentWidth, height: pdfHeight }}
+      >
+        <WebView
+          source={{ uri: viewerUrl }}
+          className="flex-1 bg-gray-100"
+          onError={() => setError(true)}
+          onHttpError={() => setError(true)}
+          scrollEnabled={true}
+        />
+      </View>
+      <Pressable
+        className="w-full mt-4 rounded-xl items-center justify-center flex-row gap-3 py-4 px-4 active:opacity-90 disabled:opacity-60"
+        style={{ backgroundColor: colors.secondary[500] }}
+        onPress={handleDownload}
+        disabled={downloading}
+      >
+        {downloading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text className="text-[15px] font-medium text-white">حفظ الملف</Text>
+        )}
+      </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    alignSelf: 'center',
-    marginVertical: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  webview: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  errorBox: {
-    padding: 24,
-    borderRadius: 12,
-    marginVertical: 16,
-    alignItems: 'center',
-  },
-  errorText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  errorSub: {
-    fontSize: 14,
-  },
-});

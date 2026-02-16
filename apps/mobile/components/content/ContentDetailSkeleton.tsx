@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,18 +8,18 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
-import { lightTheme, darkTheme } from '@/lib/theme';
+import Colors from '@/constants/Colors';
 
 export type ContentDetailSkeletonVariant = 'story' | 'media';
 
 export interface ContentDetailSkeletonProps {
-  /** story: عنوان + وصف + صفحات. media: صورة مصغرة + عنوان + وصف */
   variant: ContentDetailSkeletonVariant;
 }
 
 export function ContentDetailSkeleton({ variant }: ContentDetailSkeletonProps) {
-  const isDark = useEffectiveColorScheme() === 'dark';
-  const theme = isDark ? darkTheme : lightTheme;
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
   const pulse = useSharedValue(0.5);
 
   useEffect(() => {
@@ -36,78 +37,71 @@ export function ContentDetailSkeleton({ variant }: ContentDetailSkeletonProps) {
     opacity: pulse.value,
   }));
 
-  const bg = theme.muted;
+  const bg = colors.muted;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {variant === 'media' && (
+    <ScrollView
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={{ paddingBottom: 32 }}
+    >
+      {/* هيدر السكيلتون (زر رجوع + عنوان) */}
+      <Animated.View
+        className="flex-row items-center gap-3 px-4 py-3 border-b"
+        style={[
+          {
+            paddingTop: insets.top + 12,
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+          },
+          animatedStyle,
+        ]}
+      >
         <Animated.View
-          style={[styles.thumbnail, { backgroundColor: bg }, animatedStyle]}
+          className="w-10 h-10 rounded-full"
+          style={[{ backgroundColor: bg }, animatedStyle]}
         />
-      )}
-      <Animated.View
-        style={[styles.titleLine, { backgroundColor: bg }, animatedStyle]}
-      />
-      <Animated.View
-        style={[styles.descLine1, { backgroundColor: bg }, animatedStyle]}
-      />
-      <Animated.View
-        style={[styles.descLine2, { backgroundColor: bg }, animatedStyle]}
-      />
-      {variant === 'story' && (
-        <>
+        <Animated.View
+          className="h-5 rounded-lg flex-1"
+          style={[{ backgroundColor: bg }, animatedStyle]}
+        />
+      </Animated.View>
+      <View style={{ padding: 16 }}>
+        {variant === 'media' && (
           <Animated.View
-            style={[styles.pageBlock, { backgroundColor: bg }, animatedStyle]}
+            className="w-full aspect-video rounded-xl mb-4"
+            style={[{ backgroundColor: bg }, animatedStyle]}
           />
-          <Animated.View
-            style={[styles.pageBlock, { backgroundColor: bg }, animatedStyle]}
-          />
-          <Animated.View
-            style={[styles.pageBlockShort, { backgroundColor: bg }, animatedStyle]}
-          />
-        </>
-      )}
+        )}
+        <Animated.View
+          className="h-6 rounded-lg w-[80%] mb-3"
+          style={[{ backgroundColor: bg }, animatedStyle]}
+        />
+        <Animated.View
+          className="h-4 rounded-md w-full mb-2"
+          style={[{ backgroundColor: bg }, animatedStyle]}
+        />
+        <Animated.View
+          className="h-4 rounded-md w-[65%] mb-6"
+          style={[{ backgroundColor: bg }, animatedStyle]}
+        />
+        {variant === 'story' && (
+          <>
+            <Animated.View
+              className="w-full aspect-[4/3] rounded-lg mb-6"
+              style={[{ backgroundColor: bg }, animatedStyle]}
+            />
+            <Animated.View
+              className="w-full aspect-[4/3] rounded-lg mb-6"
+              style={[{ backgroundColor: bg }, animatedStyle]}
+            />
+            <Animated.View
+              className="w-full aspect-[4/3] rounded-lg mb-6"
+              style={[{ backgroundColor: bg }, animatedStyle]}
+            />
+          </>
+        )}
+      </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16, paddingBottom: 32 },
-  thumbnail: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  titleLine: {
-    height: 24,
-    borderRadius: 8,
-    width: '80%',
-    marginBottom: 12,
-  },
-  descLine1: {
-    height: 16,
-    borderRadius: 6,
-    width: '100%',
-    marginBottom: 8,
-  },
-  descLine2: {
-    height: 16,
-    borderRadius: 6,
-    width: '65%',
-    marginBottom: 24,
-  },
-  pageBlock: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: 8,
-    marginBottom: 24,
-  },
-  pageBlockShort: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: 8,
-    marginBottom: 24,
-  },
-});

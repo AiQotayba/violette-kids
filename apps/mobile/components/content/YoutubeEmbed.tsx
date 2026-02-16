@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import Colors from '@/constants/Colors';
+import { useEffectiveColorScheme } from '@/lib/settings/context';
+import { Ionicons } from '@expo/vector-icons';
+import { useMemo, useState } from 'react';
+import { Dimensions, Image, Linking, Pressable, Text, View } from 'react-native';
 
-/** استخراج معرف فيديو يوتيوب من الرابط */
 export function getYoutubeVideoId(url: string): string | null {
   if (!url || typeof url !== 'string') return null;
   const trimmed = url.trim();
@@ -16,71 +17,68 @@ export function getYoutubeVideoId(url: string): string | null {
 }
 
 export interface YoutubeEmbedProps {
-  /** رابط يوتيوب (watch أو youtu.be أو embed) */
   url: string;
 }
 
 export function YoutubeEmbed({ url }: YoutubeEmbedProps) {
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme];
+  if (!colors) return null;
   const videoId = useMemo(() => getYoutubeVideoId(url), [url]);
+  const [thumbnailError, setThumbnailError] = useState(false);
   const { width } = Dimensions.get('window');
-  const height = Math.round((width - 32) * (9 / 16)); // نفس padding المحتوى
+  const height = Math.round((width - 32) * (9 / 16));
+  const thumbnailUri = videoId
+    ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+    : null;
 
-  const embedHtml = useMemo(() => {
-    if (!videoId) return '';
-    const embedUrl = `https://www.youtube.com/embed/${videoId}?playsinline=1`;
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          html, body { width: 100%; height: 100%; overflow: hidden; }
-          iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-          }
-        </style>
-      </head>
-      <body>
-        <iframe
-          src="${embedUrl}"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-        ></iframe>
-      </body>
-      </html>
-    `;
-  }, [videoId]);
+  const openVideo = () => {
+    if (url) Linking.openURL(url).catch(() => {});
+  };
 
   if (!videoId) return null;
 
+  if (thumbnailError) {
+    return (
+      <View
+        className="self-center rounded-xl overflow-hidden mb-6 bg-black justify-center items-center p-5 gap-2.5"
+        style={{ width: width - 32, height }}
+      >
+        <Text className="text-lg font-bold text-white text-center">هذا الفيديو غير متوفر</Text>
+        <Text className="text-sm text-white/80 text-center">
+          قد يكون محذوفاً أو غير متاح في منطقتك (خطأ 152 من يوتيوب).
+        </Text>
+        <Pressable
+          className="mt-2 py-3 px-5 bg-white/20 rounded-xl"
+          onPress={openVideo}
+        >
+          <Text className="text-[15px] font-semibold text-white">فتح الرابط على أي حال</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
-    <View style={[styles.wrapper, { width: width - 32, height }]}>
-      <WebView
-        source={{ html: embedHtml }}
-        style={styles.webview}
-        scrollEnabled={false}
-        allowsInlineMediaPlayback
-        mediaPlaybackRequiresUserAction={false}
-      />
-    </View>
+    <Pressable
+      className="self-center rounded-xl overflow-hidden mb-6 bg-black"
+      style={{ width: width - 32, height }}
+      onPress={openVideo}
+    >
+      {thumbnailUri ? (
+        <Image
+          source={{ uri: thumbnailUri }}
+          className="absolute inset-0"
+          resizeMode="cover"
+          onError={() => setThumbnailError(true)}
+        />
+      ) : null}
+      <View className="absolute inset-0 bg-black/40 justify-center items-center gap-3">
+        <View className="w-16 h-16 rounded-full bg-white/95 flex items-center justify-center">
+          <Text className="text-[28px] text-black flex items-center justify-center">
+            <Ionicons name="play" size={24} color={colors.text} />
+          </Text>
+        </View> 
+      </View>
+    </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    alignSelf: 'center',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 24,
-  },
-  webview: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-});

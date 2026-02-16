@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "قصص همسة",
-    "slug": "قصص همسة",
+    "name": "عالم همسة",
+    "slug": "عالم همسة",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "قصص همسة",
+    "icon": "./assets/images/logo.png",
+    "scheme": "عالم همسة",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,

@@ -1,12 +1,11 @@
 /**
  * الخطوط - Violette Kids (حسب mobile-PRD)
- * عناوين: Bold | نصوص: Regular | أرقام: Medium
- * Rubik أو Cairo للعربية
+ * خط تجوال (Tajawal) للعربية: عناوين Bold، نصوص Regular، أرقام Medium
  */
 export const fontFamily = {
-  heading: 'System', // استبدل بـ Rubik-Bold أو Cairo-Bold عند إضافة الخطوط
-  body: 'System',
-  numeric: 'System',
+  heading: 'Tajawal_700Bold',
+  body: 'Tajawal_400Regular',
+  numeric: 'Tajawal_500Medium',
 } as const;
 
 export const fontSize = {

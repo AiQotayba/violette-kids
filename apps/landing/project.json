@@ -1,0 +1,36 @@
+{
+  "name": "landing",
+  "projectType": "application",
+  "root": "apps/landing",
+  "sourceRoot": "apps/landing",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "apps/landing"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run dev",
+        "cwd": "apps/landing"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run lint",
+        "cwd": "apps/landing"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run start",
+        "cwd": "apps/landing"
+      }
+    }
+  }
+}

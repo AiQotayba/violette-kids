@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* عالم همسة — ستايل هبوط نظيف (خلفية بيضاء، وضوح، تسلسل هرمي) */
+:root {
+  --background: #ffffff;
+  --foreground: #1e293b;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --card: #ffffff;
+  --border: #e2e8f0;
+
+  /* شعار + محتوى */
+  --primary: #E04E6C;
+  --primary-400: #FF6E89;
+  --primary-300: #FF7D94;
+  --secondary: #4BCAD4;
+  --secondary-400: #6BD4DC;
+  --accent: #FFD95F;
+  --accent-400: #FFE07D;
+  --stories: #4BCAD4;
+  --videos: #FF6E89;
+  --games: #FFD95F;
+
+  /* واجهة التطبيق (بطاقة المستوى، تبويبات) */
+  --level-card: #8B7FD8;
+  --level-card-dark: #6D5BBF;
+  --sky-blue: #6EC6FF;
+  --mint: #7FE3C1;
+  --peach: #FFB37E;
+  --soft-purple: #C6B7FF;
+
+  /* فوتر فاتح (مثل المرجع) */
+  --footer-bg: #f8fafc;
+  --footer-text: #1e293b;
+  --footer-muted: #64748b;
+}
+
+.dark {
+  --background: #1F2937;
+  --foreground: #FFF8E1;
+  --muted: #4B5563;
+  --muted-foreground: #F5EDD6;
+  --card: #374151;
+  --border: #4B5563;
+}
+
+@theme inline {
+  --font-sans: var(--font-tajawal), system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* أشكال زخرفية خفيفة */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-float-2 { animation: float 5s ease-in-out infinite 0.5s; }
+.animate-float-3 { animation: float 4.5s ease-in-out infinite 1s; }
+
+/* توحيد الأزرار والتركيز */
+.btn-primary {
+  min-height: 3.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--background), 0 0 0 5px var(--primary);
+}
+.btn-primary:hover { opacity: 0.95; }
+.btn-primary:active { transform: scale(0.98); }
+
+.link-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary);
+  border-radius: 0.5rem;
+}

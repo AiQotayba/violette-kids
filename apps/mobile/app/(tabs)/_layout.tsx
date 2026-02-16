@@ -1,23 +1,33 @@
-import React, { useEffect } from 'react';
-import { View, Pressable } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import Colors from '@/constants/Colors';
 import { HeaderTitleWithPoints } from '@/components/nav/HeaderTitleWithPoints';
+import Colors from '@/constants/Colors';
+import { kidSpring } from '@/lib/animations/springs';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { TAB_BAR_HEIGHT } from '@/lib/useTabBarBottomPadding';
-import { kidSpring } from '@/lib/animations/springs';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
+import React, { useEffect, useMemo } from 'react';
+import { Pressable, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ICON_SIZE = 26;
 const BAR_RADIUS = 32;
 const BAR_MARGIN_H = 12;
 
-type IconName = React.ComponentProps<typeof FontAwesome>['name'];
+function getActivePillColor(
+  focused: boolean,
+  href: string | undefined,
+  tabPillColors: Record<string, string>
+): string {
+  if (!focused) return 'transparent';
+  const path = typeof href === 'string' ? href : '';
+  return tabPillColors[path] ?? tabPillColors['/'];
+}
+
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 function TabIcon({ name, color }: { name: IconName; color: string }) {
-  return <FontAwesome name={name} size={ICON_SIZE} color={color} />;
+  return <Ionicons name={name} size={ICON_SIZE} color={color} />;
 }
 
 function AnimatedTabPill({
@@ -54,6 +64,17 @@ export default function TabLayout() {
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
 
+  const tabPillColors = useMemo(
+    () => ({
+      '/': colors.tabPillHomeProfile,
+      '/profile': colors.tabPillHomeProfile,
+      '/stories': colors.tabPillStories,
+      '/games': colors.tabPillGames,
+      '/videos': colors.tabPillVideos,
+    }),
+    [colors]
+  );
+
   const tabBarStyle = {
     position: 'absolute' as const,
     left: BAR_MARGIN_H,
@@ -66,9 +87,9 @@ export default function TabLayout() {
     borderRadius: BAR_RADIUS,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
-    backgroundColor: colors.tabBarBackground,
+    // backgroundColor: colors.tabBarBackground,
     borderTopWidth: 0,
-    shadowColor: '#000',
+    // shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
@@ -77,19 +98,18 @@ export default function TabLayout() {
 
   const screenOptions = {
     headerShown: true,
-    headerTintColor: colors.text,
+    headerTintColor: colors.secondary[500],
     headerTitle: () => <HeaderTitleWithPoints />,
     headerStyle: {
-      backgroundColor: colors.background,
-      shadowColor: 'transparent',
+      // backgroundColor: colors.background,
+      // shadowColor: 'transparent',
       elevation: 0,
     },
     headerShadowVisible: false,
     tabBarStyle,
     tabBarShowLabel: false,
-    tabBarActiveTintColor: colors.tabBarActivePillTint,
+    tabBarActiveTintColor:  "#fff",
     tabBarInactiveTintColor: colors.tabIconDefault,
-    tabBarActiveBackgroundColor: 'transparent',
     tabBarItemStyle: {
       flex: 1,
       minWidth: 0,
@@ -100,13 +120,11 @@ export default function TabLayout() {
     tabBarButton: (props: {
       children: React.ReactNode;
       style?: unknown;
-      accessibilityState?: { selected?: boolean };
+      'aria-selected'?: boolean;
       [key: string]: unknown;
     }) => {
-      const focused = props.accessibilityState?.selected ?? false;
-      const pillBg = focused
-        ? colors.tabBarActivePillBackground
-        : colors.tabBarInactivePillBackground;
+      const focused = props['aria-selected'] ?? false;
+      const pillBg = getActivePillColor(focused, props.href as string | undefined, tabPillColors);
       return (
         <View className="flex-1 items-center justify-center">
           <AnimatedTabPill focused={focused} pillBg={pillBg}>
@@ -133,20 +151,20 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="games"
-        options={{ title: 'الألعاب', tabBarIcon: ({ color }) => <TabIcon name="gamepad" color={color} /> }}
+        options={{ title: 'الألعاب', tabBarIcon: ({ color }) => <TabIcon name="game-controller" color={color} /> }}
       />
       <Tabs.Screen
         name="videos"
         options={{
           title: 'الفيديوهات',
-          tabBarIcon: ({ color }) => <TabIcon name="video-camera" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon name="play-circle" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'أنا',
-          tabBarIcon: ({ color }) => <TabIcon name="user" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon name="person" color={color} />,
         }}
       />
       <Tabs.Screen name="two" options={{ href: null }} />

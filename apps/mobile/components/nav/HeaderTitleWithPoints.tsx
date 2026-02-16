@@ -1,73 +1,42 @@
-import Constants from 'expo-constants';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useEffectiveColorScheme } from '@/lib/settings/context';
 import Colors from '@/constants/Colors';
 import { kidTiming } from '@/lib/animations/springs';
+import { useGamification } from '@/lib/gamification/context';
+import { useEffectiveColorScheme } from '@/lib/settings/context';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Constants from 'expo-constants';
+import { Image, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const APP_NAME = Constants.expoConfig?.name ?? 'Violette Kids';
-
-/** النقاط المستحصلة - يُربط لاحقاً بنظام الإنجازات/التخزين */
-const PLACEHOLDER_POINTS = 0;
 
 export function HeaderTitleWithPoints() {
   const colorScheme = useEffectiveColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { points } = useGamification();
 
   return (
     <Animated.View
       entering={FadeInDown.duration(kidTiming.normal).springify().damping(18)}
-      style={styles.wrap}
+      className="flex-row items-center gap-3 flex-1 justify-center py-2 px-3.5 rounded-[20px]"
     >
       <Image
         source={require('../../assets/images/logo.png')}
-        style={styles.logo}
+        className="w-9 h-9"
         resizeMode="contain"
-        accessibilityLabel="شعار قصص همسة"
+        accessibilityLabel="شعار عالم همسة"
       />
-      <Text style={[styles.appName, { color: colors.text }]} numberOfLines={1}>
+      <Text className="text-lg font-bold" style={{ color: colors.text }} numberOfLines={1}>
         {APP_NAME}
       </Text>
-      <View style={[styles.pointsRow, { backgroundColor: colors.pointsPillBg }]}>
+      <View
+        className="flex-row items-center gap-1.5 py-1.5 px-3 rounded-2xl"
+        style={{ backgroundColor: colors.pointsPillBg }}
+      >
         <FontAwesome name="star" size={12} color={colors.pointsPillStar} />
-        <Text style={[styles.pointsText, { color: colors.text }]}>
-          {PLACEHOLDER_POINTS} نقاط
+        <Text className="text-[13px] font-semibold" style={{ color: colors.text }}>
+          {points} نقاط
         </Text>
       </View>
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-  },
-  logo: {
-    width: 36,
-    height: 36,
-  },
-  appName: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  pointsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-  },
-  pointsText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});

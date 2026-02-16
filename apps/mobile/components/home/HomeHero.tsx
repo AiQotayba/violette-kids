@@ -1,13 +1,23 @@
-import { View, Text, StyleSheet } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useEffectiveColorScheme } from '@/lib/settings/context';
-import { lightTheme, darkTheme } from '@/lib/theme';
+import Colors from '@/constants/Colors';
 import { kidTiming } from '@/lib/animations/springs';
+import { useGamification } from '@/lib/gamification/context';
+import { useEffectiveColorScheme } from '@/lib/settings/context';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+
+const QUICK_ACCESS: { key: string; label: string; icon: React.ComponentProps<typeof Ionicons>['name']; route: string }[] = [
+  { key: 'stories', label: 'القصص', icon: 'book', route: '/(tabs)/stories' },
+  { key: 'games', label: 'الألعاب', icon: 'game-controller', route: '/(tabs)/games' },
+  { key: 'videos', label: 'الفيديوهات', icon: 'play-circle', route: '/(tabs)/videos' },
+  { key: 'achievements', label: 'الإنجازات', icon: 'trophy', route: '/(tabs)/profile' },
+];
 
 export function HomeHero() {
-  const isDark = useEffectiveColorScheme() === 'dark';
-  const theme = isDark ? darkTheme : lightTheme;
+  const router = useRouter();
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -16,122 +26,109 @@ export function HomeHero() {
     return 'مساء الخير';
   };
 
-  const points = 0;
-  const level = 1;
-  const levelLabel = level === 1 ? 'مبتدئ' : level < 5 ? 'نشيط' : 'بطل';
+  const { level, progressPercent } = useGamification();
+  const levelMessage = level === 1 ? 'هذه أول خطوة نحو التميز!' : 'استمر، أنت رائع!';
 
-  const cardBg = isDark ? 'rgba(255,255,255,0.07)' : '#FFFFFF';
-  const cardBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)';
-  const statBg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(59,130,246,0.08)';
-  const statBorder = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(59,130,246,0.12)';
+  const cardBg = colors.levelCardBg;
+  const progressTrack = 'rgba(255,255,255,0.35)';
+  const progressFill = colors.accent[500];
 
   return (
     <Animated.View
       entering={FadeInDown.duration(kidTiming.normal).springify()}
-      style={styles.wrap}
+      className="px-4 pt-3 pb-5"
     >
-      <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-        <Text style={[styles.greeting, { color: theme.textSecondary }]}>
-          {getGreeting()}
-        </Text>
-        <Text style={[styles.title, { color: theme.foreground }]}>
-          ماذا تريد أن تفعل اليوم؟
-        </Text>
-
-        <View style={styles.statsRow}>
-          <View style={[styles.statPill, { backgroundColor: statBg, borderColor: statBorder }]}>
-            <View style={[styles.statIconWrap, { backgroundColor: theme.accent[400] + '22' }]}>
-              <FontAwesome name="star" size={18} color={theme.accent[500]} />
-            </View>
-            <View style={styles.statTextWrap}>
-              <Text style={[styles.statValue, { color: theme.foreground }]}>{points}</Text>
-              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>نقاط</Text>
+      {/* الهيدر: صورة الملف + التحية والتقدم + الإشعارات */}
+      <View className="flex-row items-center justify-between mb-4">
+        <View className="flex-row items-center gap-3 flex-1">
+          {/* <View
+            className="w-12 h-12 rounded-full items-center justify-center border-2"
+            style={{ backgroundColor: colors.card, borderColor: colors.muted }}
+          >
+            <Ionicons name="person" size={24} color={colors.primary[500]} />
+          </View> */}
+          <View className="flex-1">
+            <Text className="text-base font-bold" style={{ color: colors.foreground }}>
+              {getGreeting()}، صديقنا
+            </Text>
+            <View className="flex-row items-center gap-1.5 mt-1">
+              <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+              <Text className="text-xs font-medium" style={{ color: colors.textSecondary }}>
+                التقدم {progressPercent}%
+              </Text> 
             </View>
           </View>
-          <View style={[styles.statPill, { backgroundColor: statBg, borderColor: statBorder }]}>
-            <View style={[styles.levelBadge, { backgroundColor: theme.primary[500] }]}>
-              <Text style={styles.levelNum}>{level}</Text>
-            </View>
-            <View style={styles.statTextWrap}>
-              <Text style={[styles.statValue, { color: theme.foreground }]}>{levelLabel}</Text>
-              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>المستوى</Text>
-            </View>
+        </View> 
+      </View>
+
+      {/* بطاقة المستوى: عنوان + وصف + شريط تقدم + كأس */}
+      <View
+        className="rounded-[28px] overflow-hidden mb-6 px-5 pt-5 pb-6"
+        style={{ backgroundColor: cardBg }}
+      >
+        <View className="flex-row items-start justify-between">
+          <View className="flex-1 mr-3">
+            <Text className="text-xl font-bold text-white">المستوى {level}</Text>
+            <Text className="text-sm mt-1.5 opacity-95 text-white">{levelMessage}</Text>
+          </View>
+          <View
+            className="w-14 h-14 rounded-2xl items-center justify-center"
+            style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+          >
+            <Ionicons name="trophy" size={32} color={colors.accent[500]} />
           </View>
         </View>
+        <View className="mt-5 flex-row items-center" style={{ overflow: 'visible' }}>
+          <View
+            className="flex-1 h-3 rounded-full overflow-visible"
+            style={{ backgroundColor: progressTrack }}
+          >
+            <View
+              className="h-full rounded-full absolute left-0 top-0"
+              style={{
+                width: `${Math.max(progressPercent, 4)}%`,
+                minWidth: 12,
+                backgroundColor: progressFill,
+              }}
+            />
+            <View
+              className="absolute w-5 h-5 rounded-full border-2 border-white"
+              style={{
+                left: `${Math.min(progressPercent, 96)}%`,
+                marginLeft: -10,
+                top: -4,
+                backgroundColor: progressFill,
+              }}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* أيقونات الوصول السريع: دوائر متدرجة (خلفية شفافة + دائرة داخلية) */}
+      <View className="flex-row justify-between mb-6">
+        {QUICK_ACCESS.map((item) => (
+          <Pressable
+            key={item.key}
+            onPress={() => router.push(item.route as never)}
+            className="items-center gap-2.5 active:opacity-85"
+          >
+            <View
+              className="w-16 h-16 rounded-full items-center justify-center"
+              style={{ backgroundColor: colors.card }}
+            >
+              <View
+                className="w-12 h-12 rounded-full items-center justify-center"
+                style={{ backgroundColor: `${colors.primary[500]}18` }}
+              >
+                <Ionicons name={item.icon} size={24} color={colors.primary[500]} />
+              </View>
+            </View>
+            <Text className="text-xs font-semibold" style={{ color: colors.foreground }} numberOfLines={1}>
+              {item.label}
+            </Text>
+          </Pressable>
+        ))}
       </View>
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
-  },
-  card: {
-    borderRadius: 24,
-    borderWidth: 1,
-    paddingVertical: 24,
-    paddingHorizontal: 22,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  greeting: {
-    fontSize: 15,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 32,
-    marginBottom: 24,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 14,
-  },
-  statPill: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  statIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statTextWrap: {
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  levelBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  levelNum: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
-  },
-});

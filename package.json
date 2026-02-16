@@ -26,7 +26,11 @@
     "start:api": "nx run api:start",
     "start:mobile": "nx run mobile:start",
     "android:mobile": "nx run mobile:android",
-    "ios:mobile": "nx run mobile:ios"
+    "ios:mobile": "nx run mobile:ios",
+    "dev:landing": "nx run landing:dev",
+    "build:landing": "nx run landing:build",
+    "start:landing": "nx run landing:start",
+    "lint:landing": "nx run landing:lint"
   },
   "devDependencies": {
     "nx": "22.4.2"
