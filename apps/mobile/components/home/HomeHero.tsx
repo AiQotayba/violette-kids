@@ -1,10 +1,11 @@
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
 import { kidTiming } from '@/lib/animations/springs';
 import { useGamification } from '@/lib/gamification/context';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const QUICK_ACCESS: { key: string; label: string; icon: React.ComponentProps<typeof Ionicons>['name']; route: string }[] = [
@@ -41,24 +42,18 @@ export function HomeHero() {
       {/* الهيدر: صورة الملف + التحية والتقدم + الإشعارات */}
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center gap-3 flex-1">
-          {/* <View
-            className="w-12 h-12 rounded-full items-center justify-center border-2"
-            style={{ backgroundColor: colors.card, borderColor: colors.muted }}
-          >
-            <Ionicons name="person" size={24} color={colors.primary[500]} />
-          </View> */}
           <View className="flex-1">
-            <Text className="text-base font-bold" style={{ color: colors.foreground }}>
+            <Text className="text-base" style={{ color: colors.foreground, fontFamily: 'Tajawal_500Medium' }}>
               {getGreeting()}، صديقنا
             </Text>
             <View className="flex-row items-center gap-1.5 mt-1">
               <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
-              <Text className="text-xs font-medium" style={{ color: colors.textSecondary }}>
+              <Text className="text-xs font-medium" style={{ color: colors.textSecondary, fontFamily: 'Tajawal_500Medium' }}>
                 التقدم {progressPercent}%
-              </Text> 
+              </Text>
             </View>
           </View>
-        </View> 
+        </View>
       </View>
 
       {/* بطاقة المستوى: عنوان + وصف + شريط تقدم + كأس */}
@@ -68,7 +63,7 @@ export function HomeHero() {
       >
         <View className="flex-row items-start justify-between">
           <View className="flex-1 mr-3">
-            <Text className="text-xl font-bold text-white">المستوى {level}</Text>
+            <Text className="text-xl text-white" style={{ fontFamily: 'Tajawal_700Bold' }}>{`المستوى ${level}`}</Text>
             <Text className="text-sm mt-1.5 opacity-95 text-white">{levelMessage}</Text>
           </View>
           <View

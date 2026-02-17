@@ -4,6 +4,7 @@ import { Error } from '@/components/content/page/error';
 import { PageHeader } from '@/components/content/page/header';
 import { NotFound } from '@/components/content/page/notfound';
 import { PdfViewer } from '@/components/content/PdfViewer';
+import { RelatedContent } from '@/components/content/RelatedContent';
 import Colors from '@/constants/Colors';
 import { useGamification } from '@/lib/gamification/context';
 import { getContentById } from '@/lib/api';
@@ -12,7 +13,8 @@ import type { Content } from '@/types/content';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Text } from '@/components/Text';
+import { Pressable, ScrollView, View } from 'react-native';
 
 export default function StoryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,6 +63,7 @@ export default function StoryDetailScreen() {
       className="flex-1"
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      nestedScrollEnabled
     >
       <PageHeader title={content.title} />
       {completed && (
@@ -126,6 +129,7 @@ export default function StoryDetailScreen() {
         </View>
       )}
       <Content.description />
+      {id && <RelatedContent type="story" excludeId={id} />}
     </ScrollView>
   );
 }

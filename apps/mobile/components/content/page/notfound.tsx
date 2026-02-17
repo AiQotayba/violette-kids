@@ -1,6 +1,7 @@
 import Colors from '@/constants/Colors';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
-import { Text, View } from 'react-native';
+import { Text } from '@/components/Text';
+import { View } from 'react-native';
 
 export function NotFound() {
   const colorScheme = useEffectiveColorScheme();

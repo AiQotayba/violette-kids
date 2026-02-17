@@ -3,12 +3,13 @@ import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
+import { Text } from '@/components/Text';
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Platform,
   Pressable,
-  Text,
   View,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -84,6 +85,10 @@ export function PdfViewer({ uri }: PdfViewerProps) {
           onError={() => setError(true)}
           onHttpError={() => setError(true)}
           scrollEnabled={true}
+          nestedScrollEnabled={true}
+          bounces={false}
+          overScrollMode={Platform.OS === 'android' ? 'always' : undefined}
+          style={{ minHeight: pdfHeight }}
         />
       </View>
       <Pressable

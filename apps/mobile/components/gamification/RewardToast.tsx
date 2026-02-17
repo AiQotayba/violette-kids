@@ -3,12 +3,13 @@
  * يعزز شعور الطفل أنه بطل في رحلة — وليس عدّاد مهام
  */
 
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
 import { useGamification } from '@/lib/gamification/context';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef } from 'react';
-import { Animated, Pressable, Text, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 
 const TOAST_DURATION_MS = 3200;
 
@@ -82,14 +83,14 @@ export function RewardToast() {
           <View className="flex-1">
             {hasAchievements && (
               <>
-                <Text className="text-base font-bold" style={{ color: colors.text }}>
+                <Text className="text-base" style={{ color: colors.text, fontFamily: 'Tajawal_700Bold' }}>
                   رائع! لقد حصلت على شارة
                 </Text>
                 {achievements.map((a) => (
                   <Text
                     key={a.id}
-                    className="text-lg font-bold mt-0.5"
-                    style={{ color: colors.primary[500] }}
+                    className="text-lg mt-0.5"
+                    style={{ color: colors.primary[500], fontFamily: 'Tajawal_700Bold' }}
                     numberOfLines={1}
                   >
                     {a.title}
@@ -98,12 +99,12 @@ export function RewardToast() {
               </>
             )}
             {!hasAchievements && hasPoints && (
-              <Text className="text-base font-bold" style={{ color: colors.text }}>
+              <Text className="text-base" style={{ color: colors.text, fontFamily: 'Tajawal_700Bold' }}>
                 +{lastReward.pointsEarned} نقاط
               </Text>
             )}
             {hasLevelUp && (
-              <Text className="text-sm font-semibold mt-1" style={{ color: colors.primary[500] }}>
+              <Text className="text-sm mt-1" style={{ color: colors.primary[500], fontFamily: 'Tajawal_700Bold' }}>
                 ترقية مستوى! 🎉
               </Text>
             )}

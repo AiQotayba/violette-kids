@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "عالم همسة",
-    "slug": "عالم همسة",
+    "slug": "hamsa-world",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -22,7 +22,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.hamsaworld.test"
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +35,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "71ad3f9a-510b-4972-8949-a3f6042b4c0b"
+      }
     }
   }
 }

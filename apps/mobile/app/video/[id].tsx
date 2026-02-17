@@ -3,15 +3,17 @@ import { ContentEngine } from '@/components/content/page/content.engine';
 import { Error } from '@/components/content/page/error';
 import { PageHeader } from '@/components/content/page/header';
 import { NotFound } from '@/components/content/page/notfound';
+import { RelatedContent } from '@/components/content/RelatedContent';
 import Colors from '@/constants/Colors';
-import { useGamification } from '@/lib/gamification/context';
 import { getContentById } from '@/lib/api';
+import { useGamification } from '@/lib/gamification/context';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
 import type { Content } from '@/types/content';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Text } from '@/components/Text';
+import { Pressable, ScrollView, View } from 'react-native';
 
 export default function VideoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -115,6 +117,7 @@ export default function VideoDetailScreen() {
         <Content.title />
         <Content.categories />
         <Content.description />
+        {id && <RelatedContent type="video" excludeId={id} />}
       </View>
     </ScrollView>
   );

@@ -1,5 +1,6 @@
 import { ContentCard } from '@/components/cards/ContentCard';
 import { HomeHero } from '@/components/home/HomeHero';
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
 import { getContentList } from '@/lib/api';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
@@ -8,7 +9,7 @@ import type { Content } from '@/types/content';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 async function fetchHomeContent(): Promise<{
@@ -82,7 +83,7 @@ export default function HomeScreen() {
         >
           <Ionicons name="alert-circle" size={48} color={colors.error} />
         </View>
-        <Text className="text-xl font-bold mb-2" style={{ color: colors.foreground }}>
+        <Text className="text-xl mb-2" style={{ color: colors.foreground, fontFamily: 'Tajawal_700Bold' }}>
           لا يمكن تحميل المحتوى
         </Text>
         <Text className="text-[15px] text-center mb-6" style={{ color: colors.textSecondary }}>
@@ -164,7 +165,7 @@ function Part({
           >
             <Ionicons name={config.icon} size={24} color={sectionColor} />
           </View>
-          <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
+          <Text className="text-lg" style={{ color: colors.foreground, fontFamily: 'Tajawal_700Bold !important' }}>
             {config.title}
           </Text>
         </View>

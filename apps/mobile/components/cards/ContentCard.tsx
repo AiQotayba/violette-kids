@@ -1,3 +1,4 @@
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
 import { kidSpring } from '@/lib/animations/springs';
 import { PLACEHOLDER_STORY_IMAGE } from '@/lib/constants/placeholders';
@@ -7,7 +8,7 @@ import type { Content, ContentType } from '@/types/content';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import Animated, {
   FadeInDown,
   useAnimatedStyle,
@@ -120,13 +121,14 @@ export function ContentCard({
                 >
                   {completed && (
                     <View className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-white/90">
-                      <Text className="text-xs font-bold" style={{ color: colors.success }}>
+                      <Text className="text-xs " style={{ color: colors.success, fontFamily: 'Tajawal_700Bold' }}>
                         {completedLabel}
                       </Text>
                     </View>
                   )}
                   <Text
-                    className="text-white text-lg font-bold leading-6"
+                    className="text-white text-lg leading-6"
+                    style={{ fontFamily: 'Tajawal_700Bold' }}
                     numberOfLines={2}
                   >
                     {item.title}
@@ -170,14 +172,14 @@ export function ContentCard({
                 </View>
                 {completed && (
                   <View className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-white/90">
-                    <Text className="text-xs font-bold" style={{ color: colors.success }}>
+                    <Text className="text-xs" style={{ color: colors.success, fontFamily: 'Tajawal_700Bold' }}>
                       {completedLabel}
                     </Text>
                   </View>
                 )}
                 {isVideo && (item as Content & { duration?: string }).duration && (
                   <View className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/55"                   >
-                    <Text className="text-xs font-bold text-white">
+                    <Text className="text-xs text-white" style={{ fontFamily: 'Tajawal_700Bold' }}>
                       {(item as Content & { duration?: string }).duration}
                     </Text>
                   </View>
@@ -185,7 +187,7 @@ export function ContentCard({
               </View>
               <View className="flex-row min-h-16 h-16 p-2 pr-4 items-center justify-center"
               >
-                <Text className="flex-1 text-base font-bold text-foreground leading-5" numberOfLines={2}>
+                <Text className="flex-1 text-base text-foreground leading-5" numberOfLines={2} style={{ fontFamily: 'Tajawal_700Bold' }}>
                   {item.title}
                 </Text>
               </View>

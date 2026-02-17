@@ -1,5 +1,7 @@
 import type { CardSize } from '@/components/cards/ContentCard';
 import { ContentCard } from '@/components/cards/ContentCard';
+import { Text } from '@/components/Text';
+import { TextInput } from '@/components/TextInput';
 import Colors from '@/constants/Colors';
 import { getAgeGroups, getCategories, getContentList } from '@/lib/api';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
@@ -14,8 +16,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -234,7 +234,7 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
           <Text
             style={{
               fontSize: 20,
-              fontWeight: '700',
+              fontFamily: 'Tajawal_700Bold',
               color: colors.foreground,
             }}
           >
@@ -274,152 +274,8 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
           accessibilityLabel="بحث"
         />
       </View>
-
-      {/* التصنيفات — التصميم الأول: العنوان بجانب الشريط */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '700',
-            color: colors.textSecondary,
-            minWidth: 64,
-          }}
-        >
-          التصنيفات
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-          style={{ flex: 1 }}
-        >
-          <Pressable
-            onPress={() => setCategoryId(null)}
-            className="py-3 px-3 rounded-lg flex items-center justify-center overflow-hidden"
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.85 : 1,
-              backgroundColor: categoryId === null ? typeColor : chipBgUnselected,
-              borderWidth: 1,
-              borderColor: categoryId === null ? typeColor : chipBorderUnselected,
-            })}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '700',
-                color: categoryId === null ? '#fff' : colors.foreground,
-              }}
-            >
-              الكل
-            </Text>
-          </Pressable>
-          {categories.map((c) => {
-            const selected = categoryId === c.id;
-            return (
-              <Pressable
-                key={`c-${c.id}`}
-                onPress={() => setCategoryId(selected ? null : c.id)}
-                className="py-3 px-3 rounded-lg flex items-center justify-center overflow-hidden"
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.85 : 1,
-                  backgroundColor: selected ? typeColor : chipBgUnselected,
-                  borderWidth: 1,
-                  borderColor: selected ? typeColor : chipBorderUnselected,
-                })}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '700',
-                    color: selected ? '#fff' : colors.foreground,
-                  }}
-                  numberOfLines={1}
-                >
-                  {c.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* العمر — التصميم الأول: العنوان بجانب الشريط */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '700',
-            color: colors.textSecondary,
-            minWidth: 64,
-          }}
-        >
-          العمر
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-          style={{ flex: 1 }}
-        >
-          <Pressable
-            onPress={() => setAgeId(null)}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.85 : 1,
-              paddingHorizontal: 18,
-              paddingVertical: 12,
-              minHeight: 44,
-              justifyContent: 'center',
-              borderRadius: 22,
-              backgroundColor: ageId === null ? typeColor : chipBgUnselected,
-              borderWidth: 1,
-              borderColor: ageId === null ? typeColor : chipBorderUnselected,
-              overflow: 'hidden',
-            })}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '700',
-                color: ageId === null ? '#fff' : colors.foreground,
-              }}
-            >
-              الكل
-            </Text>
-          </Pressable>
-          {ageGroups.map((a) => {
-            const selected = ageId === a.id;
-            return (
-              <Pressable
-                key={`a-${a.id}`}
-                onPress={() => setAgeId(selected ? null : a.id)}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.85 : 1,
-                  paddingHorizontal: 18,
-                  paddingVertical: 12,
-                  minHeight: 44,
-                  justifyContent: 'center',
-                  borderRadius: 22,
-                  backgroundColor: selected ? typeColor : chipBgUnselected,
-                  borderWidth: 1,
-                  borderColor: selected ? typeColor : chipBorderUnselected,
-                  overflow: 'hidden',
-                })}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '700',
-                    color: selected ? '#fff' : colors.foreground,
-                  }}
-                  numberOfLines={1}
-                >
-                  {a.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
+      <ListHeader type={type} typeColor={typeColor} chipBgUnselected={chipBgUnselected} chipBorderUnselected={chipBorderUnselected} Id={categoryId} setId={setCategoryId} items={categories} label="التصنيفات" />
+      <ListHeader type={type} typeColor={typeColor} chipBgUnselected={chipBgUnselected} chipBorderUnselected={chipBorderUnselected} Id={ageId} setId={setAgeId} items={ageGroups} label="العمر" />
 
       {hasActiveFilters && (
         <Pressable
@@ -434,14 +290,13 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
             backgroundColor: colors.muted,
           })}
         >
-          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primary[500] }}>
+          <Text style={{ fontSize: 13, fontFamily: 'Tajawal_700Bold', color: colors.primary[500] }}>
             مسح الفلاتر · عرض الكل
           </Text>
         </Pressable>
       )}
     </View>
   );
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <FlatList
@@ -499,7 +354,7 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
             <Text
               style={{
                 fontSize: 18,
-                fontWeight: '700',
+                fontFamily: 'Tajawal_700Bold',
                 color: colors.foreground,
                 textAlign: 'center',
                 marginBottom: 8,
@@ -529,7 +384,7 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
                   backgroundColor: typeColor,
                 })}
               >
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#fff' }}>عرض الكل</Text>
+                <Text style={{ fontSize: 15, fontFamily: 'Tajawal_700Bold', color: '#fff' }}>عرض الكل</Text>
               </Pressable>
             )}
           </View>
@@ -546,11 +401,106 @@ export function ContentListScreen({ type, title }: ContentListScreenProps) {
               }}
             >
               <ActivityIndicator size="small" color={colors.primary[500]} />
-              <Text style={{ fontSize: 14, color: colors.textSecondary }}>جاري تحميل المزيد...</Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary, fontFamily: 'Tajawal_700Bold' }}>جاري تحميل المزيد...</Text>
             </View>
           ) : null
         }
       />
+    </View>
+  );
+}
+type ListHeaderProps = {
+  type: ContentType,
+  typeColor: string,
+  chipBgUnselected: string,
+  chipBorderUnselected: string,
+  Id: number | null,
+  setId: (Id: number | null) => void,
+  items: any[],
+  label: string
+
+}
+
+function ListHeader({
+  type,
+  typeColor,
+  chipBgUnselected,
+  chipBorderUnselected,
+  Id,
+  setId,
+  items,
+  label,
+}: ListHeaderProps) {
+  const colorScheme = useEffectiveColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const chipSelectedBg =
+    type === 'story'
+      ? colors.chipSelectedBg.stories
+      : type === 'video'
+        ? colors.chipSelectedBg.videos
+        : colors.chipSelectedBg.games;
+
+  // الـ API يعيد name للتصنيفات/الفئات العمرية؛ نوحّد العرض عبر label
+  const options = [
+    { id: null, label: 'الكل' },
+    ...items.map((item: { id: number; name?: string; label?: string }) => ({
+      id: item.id,
+      label: item.name ?? item.label ?? '',
+    })),
+  ];
+
+  return (
+    <View style={{ marginBottom: 14 }}>
+      <Text
+        style={{
+          fontSize: 13,
+          fontFamily: 'Tajawal_500Medium',
+          color: colors.textSecondary,
+          marginBottom: 10,
+        }}
+      >
+        {label}
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+        style={{ flexGrow: 0 }}
+      >
+        {options.map((option) => {
+          const isAll = option.id === null;
+          const selected = isAll ? Id === null : Id === option.id;
+
+          return (
+            <Pressable
+              key={isAll ? 'all' : `item-${option.id}`}
+              onPress={() => setId(isAll ? null : (selected ? null : option.id))}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.85 : 1, 
+                borderRadius: 9999,
+                backgroundColor: selected ? chipSelectedBg : chipBgUnselected,
+                borderWidth: 1,
+                borderColor: selected ? chipSelectedBg : chipBorderUnselected,
+              })}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: 'Tajawal_700Bold',
+                  color: selected ? "#fff" : colors.foreground,
+                  backgroundColor: selected ? typeColor : '#eee',
+                  paddingVertical: 8,
+                  paddingHorizontal: 18,
+                  borderRadius: 10,
+                }}
+                numberOfLines={1}
+              >
+                {option.label || '—'}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }

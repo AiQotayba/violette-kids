@@ -1,14 +1,15 @@
-import { View, Text, Pressable } from 'react-native';
+import { Text } from '@/components/Text';
+import Colors from '@/constants/Colors';
+import { kidSpring } from '@/lib/animations/springs';
+import { useEffectiveColorScheme } from '@/lib/settings/context';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Pressable, View } from 'react-native';
 import Animated, {
+  FadeInRight,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  FadeInRight,
 } from 'react-native-reanimated';
-import Colors from '@/constants/Colors';
-import { useEffectiveColorScheme } from '@/lib/settings/context';
-import { kidSpring } from '@/lib/animations/springs';
 
 type SectionType = 'stories' | 'videos' | 'games';
 
@@ -54,7 +55,7 @@ export function SectionHeader({ type, onViewAll, index = 0 }: SectionHeaderProps
         >
           <FontAwesome name={config.icon} size={24} color={tint} />
         </View>
-        <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
+        <Text className="text-lg" style={{ color: colors.foreground, fontFamily: 'Tajawal_700Bold' }}>
           {config.title}
         </Text>
       </View>
@@ -85,7 +86,7 @@ export function SectionHeader({ type, onViewAll, index = 0 }: SectionHeaderProps
             animatedBtnStyle,
           ]}
         >
-          <Text className="text-[15px] font-bold" style={{ color: colors.primary[500] }}>
+          <Text className="text-[15px]" style={{ color: colors.primary[500], fontFamily: 'Tajawal_700Bold' }}>
             عرض الكل
           </Text>
           <FontAwesome name="chevron-left" size={12} color={colors.primary[500]} style={{ marginTop: 1 }} />

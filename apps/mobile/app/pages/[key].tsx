@@ -5,11 +5,11 @@ import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useLayoutEffect } from 'react';
+import { Text } from '@/components/Text';
 import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 

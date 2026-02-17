@@ -1,6 +1,7 @@
+import { Text } from '@/components/Text';
 import { colors } from '@/lib/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Dimensions, Image, Linking, Pressable, Text, View } from 'react-native';
+import { Dimensions, Image, Linking, Pressable, View } from 'react-native';
 import { getYoutubeVideoId, YoutubeEmbed } from '../YoutubeEmbed';
 
 export class ContentEngine {
@@ -50,7 +51,7 @@ export class ContentEngine {
     }
     title() {
         return (
-            <Text className="text-[22px] font-bold mb-2" style={{ color: colors.neutral[800] }}>{this.content.title}</Text>
+            <Text className="text-[22px] mb-2" style={{ color: colors.neutral[800], fontFamily: 'Tajawal_700Bold' }}>{this.content.title}</Text>
         )
     }
     video() {

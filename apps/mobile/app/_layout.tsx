@@ -1,9 +1,13 @@
 import '../global.css';
 
 import {
+  Tajawal_200ExtraLight,
+  Tajawal_300Light,
   Tajawal_400Regular,
   Tajawal_500Medium,
   Tajawal_700Bold,
+  Tajawal_800ExtraBold,
+  Tajawal_900Black,
 } from '@expo-google-fonts/tajawal';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
@@ -11,7 +15,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { I18nManager, Text, TextInput, View } from 'react-native';
+import { I18nManager, View } from 'react-native';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -43,10 +47,14 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    [fontFamily.body]: Tajawal_400Regular,
-    [fontFamily.heading]: Tajawal_700Bold,
-    [fontFamily.numeric]: Tajawal_500Medium,
+    // SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    [fontFamily.extraLight]: Tajawal_200ExtraLight,
+    [fontFamily.light]: Tajawal_300Light,
+    [fontFamily.regular]: Tajawal_400Regular,
+    [fontFamily.medium]: Tajawal_500Medium,
+    [fontFamily.bold]: Tajawal_700Bold,
+    [fontFamily.extraBold]: Tajawal_800ExtraBold,
+    [fontFamily.black]: Tajawal_900Black,
     ...FontAwesome.font,
   });
 
@@ -57,14 +65,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (!loaded) return;
     SplashScreen.hideAsync();
-    // تطبيق خط تجوال كافتراضي لـ Text و TextInput في التطبيق
-    const defaultFontStyle = { fontFamily: fontFamily.body };
-    const setDefaultFont = (Component: typeof Text | typeof TextInput) => {
-      const C = Component as typeof Text & { defaultProps?: { style?: unknown } };
-      C.defaultProps = { ...C.defaultProps, style: [defaultFontStyle] };
-    };
-    setDefaultFont(Text);
-    setDefaultFont(TextInput);
   }, [loaded]);
 
   if (!loaded) {

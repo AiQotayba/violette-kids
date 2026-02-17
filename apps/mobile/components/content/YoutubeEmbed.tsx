@@ -1,8 +1,19 @@
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
-import { useEffectiveColorScheme } from '@/lib/settings/context';
+import { useEffectiveColorScheme, useSettings } from '@/lib/settings/context';
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { Dimensions, Image, Linking, Pressable, Text, View } from 'react-native';
+import { Dimensions, Linking, Platform, Pressable, View } from 'react-native';
+import YoutubePlayer, { type PLAYER_STATES } from 'react-native-youtube-iframe';
+
+/** معاملات المشغّل عند تفعيل وضع الخصوصية: إخفاء الفيديوهات المقترحة والتعليقات والتركيز على الفيديو فقط */
+function getPrivacyPlayerParams() {
+  return {
+    rel: false as const,           // عرض فيديوهات مقترحة من نفس القناة فقط
+    iv_load_policy: 2 as const,   // إخفاء التعليقات التوضيحية
+    preventFullScreen: true,      // منع الخروج للتطبيق الكامل (أفضل للأطفال)
+  };
+}
 
 export function getYoutubeVideoId(url: string): string | null {
   if (!url || typeof url !== 'string') return null;
@@ -18,19 +29,20 @@ export function getYoutubeVideoId(url: string): string | null {
 
 export interface YoutubeEmbedProps {
   url: string;
+  /** يبدأ التشغيل تلقائياً عند العرض (افتراضي: false) */
+  autoPlay?: boolean;
 }
 
-export function YoutubeEmbed({ url }: YoutubeEmbedProps) {
+export function YoutubeEmbed({ url, autoPlay = false }: YoutubeEmbedProps) {
   const colorScheme = useEffectiveColorScheme();
   const colors = Colors[colorScheme];
-  if (!colors) return null;
+  const { youtubePrivacyMode } = useSettings();
   const videoId = useMemo(() => getYoutubeVideoId(url), [url]);
-  const [thumbnailError, setThumbnailError] = useState(false);
+  const initialPlayerParams = youtubePrivacyMode ? getPrivacyPlayerParams() : undefined;
+  const [playing, setPlaying] = useState(autoPlay);
+  const [playerError, setPlayerError] = useState(false);
   const { width } = Dimensions.get('window');
   const height = Math.round((width - 32) * (9 / 16));
-  const thumbnailUri = videoId
-    ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-    : null;
 
   const openVideo = () => {
     if (url) Linking.openURL(url).catch(() => {});
@@ -38,47 +50,47 @@ export function YoutubeEmbed({ url }: YoutubeEmbedProps) {
 
   if (!videoId) return null;
 
-  if (thumbnailError) {
+  /** على الويب قد لا يعمل المشغّل المضمّن؛ نعرض رابط الفتح */
+  const useNativePlayer = Platform.OS !== 'web' && !playerError;
+
+  if (!useNativePlayer) {
     return (
       <View
         className="self-center rounded-xl overflow-hidden mb-6 bg-black justify-center items-center p-5 gap-2.5"
-        style={{ width: width - 32, height }}
+        style={{ width: width - 32, minHeight: 180 }}
       >
-        <Text className="text-lg font-bold text-white text-center">هذا الفيديو غير متوفر</Text>
+        <Ionicons name="play-circle" size={48} color="rgba(255,255,255,0.8)" />
+        <Text className="text-base text-white text-center" style={{ fontFamily: 'Tajawal_700Bold' }}>
+          {playerError ? 'هذا الفيديو غير متوفر للتشغيل هنا' : 'شغّل الفيديو من المتصفح'}
+        </Text>
         <Text className="text-sm text-white/80 text-center">
-          قد يكون محذوفاً أو غير متاح في منطقتك (خطأ 152 من يوتيوب).
+          اضغط لفتح الفيديو في يوتيوب.
         </Text>
         <Pressable
           className="mt-2 py-3 px-5 bg-white/20 rounded-xl"
           onPress={openVideo}
         >
-          <Text className="text-[15px] font-semibold text-white">فتح الرابط على أي حال</Text>
+          <Text className="text-[15px] font-semibold text-white">فتح في يوتيوب</Text>
         </Pressable>
       </View>
     );
   }
 
   return (
-    <Pressable
+    <View
       className="self-center rounded-xl overflow-hidden mb-6 bg-black"
       style={{ width: width - 32, height }}
-      onPress={openVideo}
     >
-      {thumbnailUri ? (
-        <Image
-          source={{ uri: thumbnailUri }}
-          className="absolute inset-0"
-          resizeMode="cover"
-          onError={() => setThumbnailError(true)}
-        />
-      ) : null}
-      <View className="absolute inset-0 bg-black/40 justify-center items-center gap-3">
-        <View className="w-16 h-16 rounded-full bg-white/95 flex items-center justify-center">
-          <Text className="text-[28px] text-black flex items-center justify-center">
-            <Ionicons name="play" size={24} color={colors.text} />
-          </Text>
-        </View> 
-      </View>
-    </Pressable>
+      <YoutubePlayer
+        height={height}
+        play={playing}
+        videoId={videoId}
+        initialPlayerParams={initialPlayerParams}
+        onChangeState={(state: PLAYER_STATES) => {
+          if (state === 'ended' || state === 'paused') setPlaying(false);
+        }}
+        onError={() => setPlayerError(true)}
+      />
+    </View>
   );
 }

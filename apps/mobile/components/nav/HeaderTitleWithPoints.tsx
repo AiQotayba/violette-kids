@@ -1,10 +1,11 @@
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
 import { kidTiming } from '@/lib/animations/springs';
 import { useGamification } from '@/lib/gamification/context';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Constants from 'expo-constants';
-import { Image, Text, View } from 'react-native';
+import { Image, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const APP_NAME = Constants.expoConfig?.name ?? 'Violette Kids';
@@ -25,7 +26,7 @@ export function HeaderTitleWithPoints() {
         resizeMode="contain"
         accessibilityLabel="شعار عالم همسة"
       />
-      <Text className="text-lg font-bold" style={{ color: colors.text }} numberOfLines={1}>
+      <Text className="text-lg" style={{ color: colors.text, fontFamily: 'Tajawal_900Black' }} numberOfLines={1}>
         {APP_NAME}
       </Text>
       <View
@@ -33,7 +34,7 @@ export function HeaderTitleWithPoints() {
         style={{ backgroundColor: colors.pointsPillBg }}
       >
         <FontAwesome name="star" size={12} color={colors.pointsPillStar} />
-        <Text className="text-[13px] font-semibold" style={{ color: colors.text }}>
+        <Text className="text-[13px]" style={{ color: colors.text, fontFamily: 'Tajawal_500Medium' }}>
           {points} نقاط
         </Text>
       </View>

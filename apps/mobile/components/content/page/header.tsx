@@ -1,8 +1,9 @@
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
 import { useEffectiveColorScheme } from '@/lib/settings/context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 interface PageHeaderProps {
     title: string;
@@ -34,9 +35,9 @@ export function PageHeader({ title }: PageHeaderProps) {
                 />
             </Pressable>
             <Text
-                className="flex-1 text-lg font-bold"
+                className="flex-1 text-lg"
                 numberOfLines={1}
-                style={{ color: colors.text }}
+                style={{ fontFamily: 'Tajawal_700Bold', color: colors.text }}
             >
                 {title}
             </Text>

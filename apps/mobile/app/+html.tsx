@@ -11,6 +11,11 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        {/* خط تجوال للويب — على native يُحمّل عبر useFonts في _layout */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap"
+          rel="stylesheet"
+        />
 
         {/* 
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native. 
@@ -30,6 +35,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
 const responsiveBackground = `
 body {
   background-color: #fff;
+  font-family: 'Tajawal', sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   body {

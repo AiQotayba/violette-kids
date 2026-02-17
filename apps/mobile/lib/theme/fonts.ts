@@ -1,10 +1,18 @@
 /**
  * الخطوط - Violette Kids (حسب mobile-PRD)
- * خط تجوال (Tajawal) للعربية: عناوين Bold، نصوص Regular، أرقام Medium
+ * خط تجوال (Tajawal) للعربية — جميع الأوزان المتوفرة في @expo-google-fonts/tajawal
  */
 export const fontFamily = {
-  heading: 'Tajawal_700Bold',
+  extraLight: 'Tajawal_200ExtraLight',
+  light: 'Tajawal_300Light',
+  regular: 'Tajawal_400Regular',
+  medium: 'Tajawal_500Medium',
+  bold: 'Tajawal_700Bold',
+  extraBold: 'Tajawal_800ExtraBold',
+  black: 'Tajawal_900Black',
+  // أسماء مختصرة للاستخدام الشائع (للتوافق مع الكود الحالي)
   body: 'Tajawal_400Regular',
+  heading: 'Tajawal_700Bold',
   numeric: 'Tajawal_500Medium',
 } as const;
 

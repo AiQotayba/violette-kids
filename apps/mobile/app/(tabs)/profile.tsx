@@ -1,3 +1,4 @@
+import { Text } from '@/components/Text';
 import Colors from '@/constants/Colors';
 import { useGamification } from '@/lib/gamification/context';
 import type { StoredAchievement } from '@/lib/gamification/types';
@@ -7,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const appName = Constants.expoConfig?.name;
@@ -41,7 +42,7 @@ function RowLink({
           >
             <FontAwesome name={icon} size={16} color={colors.tint} />
           </View>
-          <Text className="text-base font-medium flex-1" style={{ color: colors.text }}>
+          <Text className="text-base flex-1" style={{ color: colors.text, fontFamily: 'Tajawal_500Medium' }}>
             {label}
           </Text>
         </View>
@@ -107,8 +108,8 @@ function AchievementGridCard({
             </Text>
           </View>
           <Text
-            className="text-[12px] font-bold text-center"
-            style={{ color: colors.text }}
+            className="text-[12px] text-center"
+            style={{ fontFamily: 'Tajawal_700Bold', color: colors.text }}
             numberOfLines={2}
           >
             {achievement.title}
@@ -149,7 +150,7 @@ export default function ProfileScreen() {
             resizeMode="contain"
             accessibilityLabel="عالم همسة - نتعلم ونمرح معاً"
           />
-          <Text className="text-lg font-bold" style={{ color: colors.textSecondary }}>
+          <Text className="text-lg" style={{ color: colors.textSecondary, fontFamily: 'Tajawal_700Bold' }}>
             {appName}
           </Text>
         </View>
@@ -170,7 +171,7 @@ export default function ProfileScreen() {
               <Ionicons name="trophy" size={24} color={colors.tabPillGames} />
             </View>
             <View>
-              <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
+              <Text className="text-lg" style={{ color: colors.foreground, fontFamily: 'Tajawal_700Bold' }}>
                 الشارات
               </Text>
               <Text className="text-xs" style={{ color: colors.textSecondary }}>
@@ -179,7 +180,7 @@ export default function ProfileScreen() {
             </View>
           </View>
           <View className="items-end">
-            <Text className="text-xl font-bold" style={{ color: colors.primary[500] }}>
+            <Text className="text-xl" style={{ color: colors.primary[500], fontFamily: 'Tajawal_700Bold' }}>
               {unlockedCount}/{totalCount}
             </Text>
             <Text className="text-[11px]" style={{ color: colors.textSecondary }}>
@@ -229,7 +230,7 @@ export default function ProfileScreen() {
           >
             <Ionicons name="document-text" size={24} color={colors.tabPillStories} />
           </View>
-          <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
+          <Text className="text-lg" style={{ color: colors.foreground, fontFamily: 'Tajawal_700Bold' }}>
             صفحات
           </Text>
         </View>
