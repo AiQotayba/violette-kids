@@ -24,15 +24,17 @@ async function main() {
     { name: "مختبر العلوم", icon: "https://cdn-icons-png.flaticon.com/512/1048/1048951.png" },
     { name: "فن وتلوين", icon: "https://cdn-icons-png.flaticon.com/512/588/588395.png" },
   ];
-  const categories = await prisma.category.createManyAndReturn({ data: categoriesData });
+  const categories = await Promise.all(
+    categoriesData.map((data) => prisma.category.create({ data })),
+  );
 
-  const ageGroups = await prisma.ageGroup.createManyAndReturn({
-    data: [
+  const ageGroups = await Promise.all(
+    [
       { label: "3-5 سنوات", ageMin: 3, ageMax: 5 },
       { label: "6-8 سنوات", ageMin: 6, ageMax: 8 },
       { label: "9-12 سنة", ageMin: 9, ageMax: 12 },
-    ],
-  });
+    ].map((data) => prisma.ageGroup.create({ data })),
+  );
 
   const hashedPassword = await hash("Admin123!", 10);
   await prisma.admin.create({
