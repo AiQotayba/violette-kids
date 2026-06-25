@@ -12,6 +12,11 @@ function getDbName(url: string): string {
 }
 
 async function main() {
+  if (process.env.DATABASE_PROVIDER === "mysql") {
+    console.log("db:create is for PostgreSQL only. Create the MySQL database in CloudPanel.");
+    return;
+  }
+
   const url = process.env.DATABASE_URL;
   if (!url) {
     console.error("DATABASE_URL is not set");
