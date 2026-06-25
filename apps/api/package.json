@@ -2,6 +2,7 @@
   "name": "violette-kids-api",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.12.4",
   "scripts": {
     "postinstall": "node scripts/with-env.mjs generate",
     "build": "node scripts/with-env.mjs generate && tsc",

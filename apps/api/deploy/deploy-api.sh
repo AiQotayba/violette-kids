@@ -22,21 +22,22 @@ export CI=true
 pnpm install --no-frozen-lockfile
 
 echo "==> Generating Prisma client"
-pnpm db:generate
+node scripts/with-env.mjs generate
 
 if grep -qE '^DATABASE_PROVIDER=(mysql|"mysql")' "$API_ROOT/.env"; then
   echo "==> Syncing MySQL schema (db push)"
-  pnpm db:push
+  node scripts/with-env.mjs db push --skip-generate
 elif [ -d "$API_ROOT/prisma/migrations" ] && [ -n "$(ls -A "$API_ROOT/prisma/migrations" 2>/dev/null)" ]; then
   echo "==> Running database migrations"
-  pnpm db:migrate:deploy
+  node scripts/with-env.mjs migrate deploy
 else
   echo "==> Syncing database schema (db push)"
-  pnpm db:push
+  node scripts/with-env.mjs db push --skip-generate
 fi
 
 echo "==> Building API"
-pnpm build
+node scripts/with-env.mjs generate
+./node_modules/.bin/tsc
 
 echo "==> Starting / reloading PM2"
 pm2 startOrReload "$API_ROOT/deploy/ecosystem.config.cjs" --update-env
