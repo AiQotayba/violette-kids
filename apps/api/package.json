@@ -16,6 +16,7 @@
     "db:push": "node scripts/with-env.mjs db push --skip-generate",
     "db:seed": "node scripts/run-seed.mjs",
     "db:studio": "node scripts/with-env.mjs studio",
+    "db:migrate:to-mysql": "pnpm exec tsx scripts/migrate-pg-to-mysql.ts",
     "deploy": "bash deploy/deploy-api.sh",
     "docs:generate": "pnpm exec tsx scripts/export-openapi.ts",
     "postman:generate": "node scripts/generate-postman.cjs",
