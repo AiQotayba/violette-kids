@@ -1,7 +1,22 @@
 import { prisma } from "../../config/db.js";
+import { resolveDatabaseProvider } from "../../lib/database-url.js";
 import type { ContentType } from "./content.types.js";
 import type { Prisma } from "@prisma/client";
 import { CONTENT_CATEGORIES_LIMIT, MAX_LIMIT } from "../../config/constants.js";
+
+function textContains(value: string): Prisma.StringFilter {
+  if (resolveDatabaseProvider() === "postgresql") {
+    return { contains: value, mode: "insensitive" } as Prisma.StringFilter;
+  }
+  return { contains: value };
+}
+
+function nullableTextContains(value: string): Prisma.StringNullableFilter {
+  if (resolveDatabaseProvider() === "postgresql") {
+    return { contains: value, mode: "insensitive" } as Prisma.StringNullableFilter;
+  }
+  return { contains: value };
+}
 
 const contentSelect = {
   id: true,
@@ -54,8 +69,8 @@ export const contentRepository = {
     if (type) where.type = type;
     if (search?.trim()) {
       where.OR = [
-        { title: { contains: search.trim(), mode: "insensitive" } },
-        { description: { contains: search.trim(), mode: "insensitive" } },
+        { title: textContains(search.trim()) },
+        { description: nullableTextContains(search.trim()) },
       ];
     }
     // Age filter "3-5" => content overlapping [ageMin, ageMax]: content.ageMin <= ageMax && content.ageMax >= ageMin
@@ -101,8 +116,8 @@ export const contentRepository = {
     if (type) where.type = type;
     if (search?.trim()) {
       where.OR = [
-        { title: { contains: search.trim(), mode: "insensitive" } },
-        { description: { contains: search.trim(), mode: "insensitive" } },
+        { title: textContains(search.trim()) },
+        { description: nullableTextContains(search.trim()) },
       ];
     }
     if (categoryIds?.length) {

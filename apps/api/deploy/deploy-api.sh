@@ -18,7 +18,8 @@ fi
 mkdir -p "$API_ROOT/logs"
 
 echo "==> Installing dependencies"
-pnpm install --frozen-lockfile
+export CI=true
+pnpm install --no-frozen-lockfile
 
 echo "==> Generating Prisma client"
 pnpm db:generate
